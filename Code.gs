@@ -1,136 +1,36 @@
-function removeDupCustomers()
+/**
+ * This function processes the imported data.
+ * 
+ * @param {Event Object} e : The event object from an installed onChange trigger.
+ */
+function onChange(e)
 {
-  const sheet = SpreadsheetApp.getActiveSheet()
-  const range = sheet.getRange(2, 13, sheet.getLastRow() - 1, 1)
-  const customers = range.getValues().map(customer => [customer[0].split(',').filter(onlyUnique).sort().join()]);
-  range.setValues(customers);
-}
-
-function onlyUnique(value, index, self) {
-  return self.indexOf(value) === index;
-}
-
-function removeAccounts()
-{
-  const spreadsheet = SpreadsheetApp.getActive()
-  const accounts = ["C2729", "C3189", "C3201", "C3203", "C3204", "C3205", "C3234", "C3236", "C3241", "C3242", "C3244", "C3249", "C3259", "C3260", "C3263", "C3266", "C3269", "C3296", "C3299", "C3302", "C3304", "C3319", "C3320", "C3322", "C3350", "C3361", "C3363", "C3373", "C3375", "C3383", "C3387", "C3395", "C3425", "C3515", "C3743", "C3796", "C3812", "C3853", "C3883", "C3926", "C3996", "C4000", "C4001", "C4004", "C4006", "C4037", "C4097", "C4108", "C4115", "C4128", "C4134", "C4201", "C4203", "C4224", "C4229", "C4264", "C4481", "DC1001", "DC1002", "DC1003", "DC1004", "DC1005", "DC1006", "DC1007", "DC1008", "DC1010", "DC1011", "DC1012", "DC1015", "DC1016", "DC1017", "DC1018", "DC1019", "DC1020", "DC1021", "DC1022", "DC1024", "DC1025", "DC1026", "DC1028", "DC1030", "DC1031", "DC1032", "DC1036", "DC1038", "DC1039", "DC1041", "DC1043", "DC1044", "DC1046", "DC1047", "DC1048", "DC1049", "DC1061", "DC1064", "DC1065", "DC1066", "DC1067", "DC1069", "DC1070", "DC1071", "DC1072", "DC1073", "DC1075", "DC1076", "DC1077", "DC1078", "DC1079", "DC1080", "DC1082", "DC1083", "DC1084", "DC1086", "DC1087", "DC1088", "DC1091", "DC1092", "DC1093", "DC1094", "DC1096", "DC1097", "DC1098", "DC1099", "DC2000", "DC2001", "DC2002", "DC2003", "DC2004", "DC2005", "DC2006", "DC2009", "DC2010", "DC2011", "DC2012", "DC2013", "DC2014", "DC2015", "DC2016", "DC2017", "DC2018", "DC2019", "DC2020", "DC2022", "DC2023", "DC2024", "DC2025", "DC2026", "DC2027", "DC2028", "DC2029", "DC2030", "DC2031", "DC2032", "DC2033", "DC2034", "DC2035", "DC2036", "DC2037", "DC2038", "DC2039", "DC2041", "DC2042", "DC2043", "DC2044", "DC2045", "DC2046", "DC2047", "DC2048", "DC2049", "DC2050", "DC2051", "DC2052", "DC2053", "DC2054", "DC2056", "DC2057", "DC2058", "DC2059", "DC2060", "DC2061", "DC2062", "DC2063", "DC2064", "DC2065", "DC2066", "DC2067", "DC2068", "DI1002", "DI1009", "DI1013", "DI1014", "DI1019", "DI1020", "DI1021", "DI1022", "DI1026", "DI1027", "DI1031", "DI1032", "DI1033", "DI1037", "DI1044", "DI1045", "DI1046", "DI1048", "DI1049", "DI1050", "DI1051", "DI1052", "DI1053", "DI1054", "DI1057", "DI1059", "DI1060", "DI1061", "DI1062", "DI1063", "DI1064", "DI1065", "DI1066", "DI1067", "DI1070", "DI1071", "DI1074", "DI1075", "DI1076", "DI1077", "DI1078", "DI1079", "DI1080", "DI1081", "DI1082", "DI1083", "DI1084", "DI1086", "DI1087", "DI1089", "DI1091", "DI1092", "DI1093", "DI1094", "DI1097", "DI1099", "DI1100", "DI1101", "DI1103", "DL1001", "DL1002", "DL1003", "DL1004", "DL1005", "DL1006", "DL1007", "DL1008", "DL1009", "DL1010", "DL1011", "DL1013", "DL1014", "DL1015", "DL1016", "DL1017", "DL1018", "DL1019", "DL1020", "DL1021", "DL1022", "DL1023", "DL1024", "DL1025", "DL1026", "DL1027", "DL1028", "DL1029", "DL1030", "DL1031", "DL1032", "DL1033", "DL1034", "DL1037", "DL1038", "DL1039", "DL1040", "DL1041", "DL1042", "DL1043", "DL1044", "DL1045", "DL1046", "DL1047", "DL1049", "DL1050", "DL1051", "DL1052", "DL1053", "DL1054", "DL1055"]
-
-  const numberFormat = ['@','@', '@', '@', '@', '@', '#', '$#,##0.00', '@', '@'];
-
-  for (var i = 2012; i <= 2022; i++)
+  try
   {
-    var sheet = spreadsheet.getSheetByName(i)
-    var values = sheet.getDataRange().getValues();
-    var maxRows = values.length
-    var header = values.shift()
-
-    var data = values.filter(v => accounts.includes(v[8].toString().trim()));
-
-    data.unshift(header)
-
-    var numRows = data.length
-    var numFormats = new Array(numRows - 1).fill(numberFormat)
-    numFormats.unshift(['@','@', '@', '@', '@', '@', '@', '@', '@', '@'])
-
-    sheet.getRange(1, 1, numRows, 10).setNumberFormats(numFormats).setValues(data)
-
-    sheet.deleteRows(numRows + 1, maxRows - numRows)
+    processImportedData(e)
+  }
+  catch (error)
+  {
+    Logger.log(error['stack'])
+    Browser.msgBox(error['stack'])
   }
 }
 
-function fixHeaders()
+/**
+ * This function processes the imported data.
+ */
+function onOpen()
 {
-  const spreadsheet = SpreadsheetApp.getActive()
-  const header = spreadsheet.getSheetByName('2012').getSheetValues(1, 1, 1, 10);
-  const sheet = spreadsheet.getActiveSheet();
-  sheet.getRange(1, 1, 1, 10).setValues(header).offset(0, 0, sheet.getLastRow(), 10).setBackground('white')
-  sheet.autoResizeColumns(1, 10)
+  SpreadsheetApp.getUi().createMenu('Update')
+    .addItem('Update Quantity or Amount Data', 'collectAllHistoricalData')
+    .addToUi();
 }
 
-function concatenateData()
-{
-  const spreadsheet = SpreadsheetApp.getActive()
-
-  const year21 = spreadsheet.getSheetByName('2021').getDataRange().getValues();
-  year21.shift()
-  const year20 = spreadsheet.getSheetByName('2020').getDataRange().getValues();
-  year20.shift()
-  const year19 = spreadsheet.getSheetByName('2019').getDataRange().getValues();
-  year19.shift()
-  const year18 = spreadsheet.getSheetByName('2018').getDataRange().getValues();
-  year18.shift()
-  const year17 = spreadsheet.getSheetByName('2017').getDataRange().getValues();
-  year17.shift()
-  const year16 = spreadsheet.getSheetByName('2016').getDataRange().getValues();
-  year16.shift()
-  const year15 = spreadsheet.getSheetByName('2015').getDataRange().getValues();
-  year15.shift()
-  const year14 = spreadsheet.getSheetByName('2014').getDataRange().getValues();
-  year14.shift()
-  const year13 = spreadsheet.getSheetByName('2013').getDataRange().getValues();
-  year13.shift()
-  const year12 = spreadsheet.getSheetByName('2012').getDataRange().getValues();
-  year12.shift()
-
-
-  const year = spreadsheet.getSheetByName('2022').getDataRange().getValues().concat(
-    year21,
-    year20,
-    year19, 
-    year18,
-    year17,
-    year16,
-    year15,
-    year14,
-    year13,
-    year12)
-
-  const numRows = year.length;
-
-  var numFormats = new Array(numRows - 1).fill(['@','@', '@', '@', '@', '@', '@', '$#,##0.00', '@', '@'])
-  numFormats.unshift(['@','@', '@', '@', '@', '@', '@', '@', '@', '@'])
-
-  spreadsheet.getSheetByName('All Data').getRange(1, 1, numRows, year[0].length).setValues(year)
-}
-
-function getCustomerName()
-{
-  const customerSheet = SpreadsheetApp.getActive().getSheetByName('Customer List');
-  const accounts = customerSheet.getSheetValues(3, 2, customerSheet.getLastRow() - 2, 2).map(v => [v[0].toString().trim(), v[1].toString().trim()])
-  const invoiceSheet = SpreadsheetApp.getActiveSheet()
-  const range = invoiceSheet.getRange(2, 8, invoiceSheet.getLastRow() - 1, 3);
-  const invoiceData = range.getValues()
-
-  for (var i = 0; i < invoiceData.length; i++)
-  {
-    for (var j = 0; j < accounts.length; j++)
-    {
-      if (accounts[j][0] == invoiceData[i][0].toString().trim())
-      {
-        invoiceData[i][2] = accounts[j][1]
-        break;
-      }
-    }
-  }
-
-  range.setValues(invoiceData)
-}
-
-function getLodgeData()
-{
-  const customerSheet = SpreadsheetApp.getActive().getSheetByName('Customer List');
-  const accounts = customerSheet.getSheetValues(3, 1, customerSheet.getLastRow() - 2, 1).map(v => v[0].toString().trim())
-  const invoiceSheet = SpreadsheetApp.getActiveSheet()
-  const maxRows = invoiceSheet.getLastRow()
-  const invoiceData = invoiceSheet.getSheetValues(1, 1, maxRows, 10)
-  const header = invoiceData.shift()
-  const remainingData = invoiceData.filter(d => accounts.includes(d[7].toString().trim()))
-  const lastRow = remainingData.unshift(header);
-
-  invoiceSheet.getRange(1, 1, remainingData.length, 10).setValues(remainingData)
-  invoiceSheet.deleteRows(lastRow + 1, maxRows - lastRow)
-}
-
+/**
+ * This function handles all of the edit events that happen on the spreadsheet, looking out for when the user is trying to use either of the search pages.
+ * 
+ * @param {Event Object} e : The event object from an installed onChange trigger.
+ */
 function installedOnEdit(e)
 {
   const range = e.range;
@@ -147,28 +47,28 @@ function installedOnEdit(e)
   {
     conditional: if (isSingleColumn)
     {
-      if (row == 1 && col == 1 && (rowEnd == 13 || rowEnd == 1))
+      if (row == 1 && col == 1 && (rowEnd == 16 || rowEnd == 1))
         searchForQuantityOrAmount(spreadsheet, sheet)
       else if (isSingleRow)
       {
-        if (row == 2 && col == 4)
-          sheet.getRange(2, 8).uncheck()
-        else if (row == 2 && col == 8)
-          sheet.getRange(2, 4).uncheck()
-        else if (row == 3 && col == 4)
+        if (row == 2 && col == 5)
+          sheet.getRange(2, 9).uncheck()
+        else if (row == 2 && col == 9)
+          sheet.getRange(2, 5).uncheck()
+        else if (row == 3 && col == 5)
         {
-          sheet.getRange(3,  8).uncheck()
-          sheet.getRange(3, 10).uncheck()
+          sheet.getRange(3,  9).uncheck()
+          sheet.getRange(3, 11).uncheck()
         }
-        else if (row == 3 && col == 8)
+        else if (row == 3 && col == 9)
         {
-          sheet.getRange(3,  4).uncheck()
-          sheet.getRange(3, 10).uncheck()
+          sheet.getRange(3,  5).uncheck()
+          sheet.getRange(3, 11).uncheck()
         }
-        else if (row == 3 && col == 10)
+        else if (row == 3 && col == 11)
         {
-          sheet.getRange(3, 4).uncheck()
-          sheet.getRange(3, 8).uncheck()
+          sheet.getRange(3, 5).uncheck()
+          sheet.getRange(3, 9).uncheck()
         }
         else
           break conditional;
@@ -178,408 +78,343 @@ function installedOnEdit(e)
     }
   }
   else if (sheetName === 'Search for Invoice #s')
-  {
     if (row == 1 && col == 1 && (rowEnd == 8 || rowEnd == 1))
       searchForInvoice(spreadsheet, sheet)
-
-    // conditional: if (isSingleColumn)
-    // {
-    //   if (row == 1 && col == 1 && (rowEnd == 13 || rowEnd == 1))
-    //     search(spreadsheet, sheet)
-    //   else if (isSingleRow)
-    //   {
-    //     if (row == 2 && col == 4)
-    //       sheet.getRange(2, 8).uncheck()
-    //     else if (row == 2 && col == 8)
-    //       sheet.getRange(2, 4).uncheck()
-    //     else if (row == 4 && col == 4)
-    //     {
-    //       sheet.getRange(4,  8).uncheck()
-    //       sheet.getRange(4, 10).uncheck()
-    //     }
-    //     else if (row == 4 && col == 8)
-    //     {
-    //       sheet.getRange(4,  4).uncheck()
-    //       sheet.getRange(4, 10).uncheck()
-    //     }
-    //     else if (row == 4 && col == 10)
-    //     {
-    //       sheet.getRange(4, 4).uncheck()
-    //       sheet.getRange(4, 8).uncheck()
-    //     }
-    //     else
-    //       break conditional;
-
-    //     search(spreadsheet, sheet)
-    //   }
-    // }
-  }
 }
 
-function collectFishingTackleSkus()
+/**
+ * This function opens the LODGE SALES and CHARTER & GUIDE SALES spreadsheets, then loops through each of their yearly data. It keeps track of each active sku and 
+ * sums the full sales amount and sold quantity for that item, per each year. It also aggregates both data sets together, to produce a total amount + quantity sold.
+ * Each data set is stored on a separate spreadsheet and a user can use the Search for Item Quantity or Amount ($) sheet to choose which data set they want to search 
+ * through.
+ * 
+ * @author Jarren Ralf
+ */
+function collectAllHistoricalData()
 {
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const maxRows = sheet.getLastRow()
-  const values = sheet.getSheetValues(1, 1, maxRows, 1)
-  const fishingTackleSKUs = values.filter(v => v[0].toString().toUpperCase().includes("FISHING TACKLE") || v[0].toString().toUpperCase().includes("FISHING  TACKLE")).map(u => "\"" + u[0].split(" - ", 1)[0] + "\"")
-  Logger.log(fishingTackleSKUs)
-}
+  const spreadsheet = SpreadsheetApp.getActive();
+  spreadsheet.toast('This may take several minutes...', 'Beginning Data Collection')
+  const spreadsheet_lodgeSales = SpreadsheetApp.openById('1Hku1QJFuQXMkpXNW5HA9jSx_TyhsumRvjm1Wyp5QBRk')
+  const spreadsheet_charterGuideSales = SpreadsheetApp.openById('1czn_JgE9V3Ie3aIr69AQLuCBpKYhjHIyj4jMrDZK9Cc')
+  const currentYear = new Date().getFullYear();
+  const numYears = currentYear - 2012 + 1
+  const years = new Array(numYears).fill('').map((_, y) => (currentYear - y).toString()).reverse()
+  const COL = numYears + 2; // A column index to ensure the correct year is being updated when mapping through each year
+  const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString())
+  var quanityData_Lodge = [], quanityData_CharterGuide = [], quanityData_All = [], amountData_Lodge = [], amountData_CharterGuide = [], amountData_All = [];
+  var sheet_lodgeSales, sheet_charterGuideSales, index, index_All, item, year_y, year_index;
 
-function removeSomeSKUs()
-{
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const maxRows = sheet.getLastRow()
-  const values = sheet.getSheetValues(1, 1, maxRows, 13)
-  const header1 = values.shift()
-  const header2 = values.shift()
-  var sku;
+  // Loop through all of the years
+  years.map((year, y) => {
+    year_y = COL - y;
+    year_index = y + 1; // Reindex starting at 1.
 
-  const fishingTackleSKUs = ["80000129", "80000389", "80000549", "80000349", "80000399", "80000499", "80000799", "80000409", "80000439", "80000599", "80000199", "80000249", "80000459", "80000699", "80000739", "80000999", "80001099", "80001149", "80001249", "80001499", "80001949", "80001999", "80000039", "80000089", "80000829", "80000259", "80000589", "80000899", "80000299", "80001199", "80001599", "80000649", "80000849", "80000025", "80000169", "80000579", "80000939", "80001299", "80000139", "80000329", "80000519", "80000629", "80000769", "80000015", "80000149", "80001549", "80000049", "80000949", "80001899", "80000020", "80000079", "80000179", "80000989", "80000449", "80000099", "80001699", "80001649", "80001799", "80001849", "80000029", "80000339", "80000749", "80001399", "80000189", "80000289", "80000689", "80000069", "80000279", "80000159", "80000859", "80000729", "80000979", "80000059", "80000229", "80000119", "80000209", "80000219", "80000319", "80000359", "80000369", "80000419", "80000529", "80000639", "80000889", "80001749", "80000789", "80000609", "80000509", "80001049", "80000539", "80000659", "80001449", "80000109", "80000489", "80000759", "80000669", "80000469", "80000379", "80000869", "80000479", "80000679", "80000239", "80000719", "80000569", "80000709", "80000309", "80000919", "80001349", "80000879", "80000929", "80000269", "80000819", "80000619", "80000839", "80000959", "7000F6000", "7000F10000", "80002999", "7000F4000", "7000F5000", "7000F7000", "7000F3000", "7000F8000", "7000F20000", "7000F30000", "7000F9000", "80000779", "80000559"]
+    sheet_lodgeSales = spreadsheet_lodgeSales.getSheetByName(year)
+    sheet_lodgeSales.getSheetValues(2, 2, sheet_lodgeSales.getLastRow() - 1, 5).map(lodge => {
+      if (isNotBlank(lodge[0])) // Spaces between customers
+      {
+        item = csvData.find(sku => lodge[1] == sku[6])
 
-  const activeSkus = values.filter(v => {
-    sku = v[0].split(" - ", 1)[0];
-    return !fishingTackleSKUs.includes(sku)
+        if (item != undefined && item[10] === 'A') // Item is found and Active
+        {
+          index = quanityData_Lodge.findIndex(d => d[0] === item[1]);
+          index_All = quanityData_All.findIndex(d => d[0] === item[1]);
+
+          if (year_index !== numYears) // Not the current year but past years
+          {
+            if (index !== -1)
+            {
+              quanityData_Lodge[index][year_y] += Number(lodge[3])
+               amountData_Lodge[index][year_y] += Number(lodge[4])
+            }
+            else
+            {
+              quanityData_Lodge.push([item[1], 0, 0, ...new Array(numYears).fill(0), '']) // .Push returns the size of the new array. Use it.
+               amountData_Lodge.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
+              quanityData_Lodge[quanityData_Lodge.length - 1][year_y] = Number(lodge[3])
+               amountData_Lodge[amountData_Lodge.length  - 1][year_y] = Number(lodge[4])
+            }
+
+            if (index_All !== -1)
+            {
+              quanityData_All[index_All][year_y] += Number(lodge[3])
+               amountData_All[index_All][year_y] += Number(lodge[4])
+            }
+            else
+            {
+              quanityData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
+               amountData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
+              quanityData_All[quanityData_All.length - 1][year_y] = Number(lodge[3])
+               amountData_All[amountData_All.length  - 1][year_y] = Number(lodge[4])
+            }
+          }
+          else // This is the current year
+          {
+            if (index !== -1)
+            {
+              if (isNotBlank(quanityData_Lodge[index][15]))
+              {
+                quanityData_Lodge[index][15] += '\n' + lodge[0]
+                 amountData_Lodge[index][15] += '\n' + lodge[0]
+              }
+              else
+              {
+                quanityData_Lodge[index][15] = lodge[0]
+                 amountData_Lodge[index][15] = lodge[0]
+              }
+
+              quanityData_Lodge[index][3] += Number(lodge[3])
+               amountData_Lodge[index][3] += Number(lodge[4])
+            }
+            else
+            {
+              quanityData_Lodge.push([item[1], 0, 0, Number(lodge[3]), ...new Array(numYears - 1).fill(0), lodge[0]])
+               amountData_Lodge.push([item[1], 0, 0, Number(lodge[4]), ...new Array(numYears - 1).fill(0), lodge[0]])
+            }
+
+            if (index_All !== -1)
+            {
+              if (isNotBlank(quanityData_All[index_All][15]))
+              {
+                quanityData_All[index_All][15] += '\n' + lodge[0]
+                 amountData_All[index_All][15] += '\n' + lodge[0]
+              }
+              else
+              {
+                quanityData_All[index_All][15] = lodge[0]
+                 amountData_All[index_All][15] = lodge[0]
+              }
+
+              quanityData_All[index_All][3] += Number(lodge[3])
+               amountData_All[index_All][3] += Number(lodge[4])
+            }
+            else
+            {
+              quanityData_All.push([item[1], 0, 0, Number(lodge[3]), ...new Array(numYears - 1).fill(0), lodge[0]])
+               amountData_All.push([item[1], 0, 0, Number(lodge[4]), ...new Array(numYears - 1).fill(0), lodge[0]])
+            }
+          }
+        }
+      }
+    })
+
+    sheet_charterGuideSales = spreadsheet_charterGuideSales.getSheetByName(year)
+    sheet_charterGuideSales.getSheetValues(2, 2, sheet_charterGuideSales.getLastRow() - 1, 5).map(charterGuide => {
+      if (isNotBlank(charterGuide[0])) // Spaces between customers
+      {
+        item = csvData.find(sku => charterGuide[1] == sku[6])
+
+        if (item != undefined && item[10] === 'A') // Item is found and Active
+        {
+          index = quanityData_CharterGuide.findIndex(d => d[0] === item[1]);
+          index_All = quanityData_All.findIndex(d => d[0] === item[1]);
+
+          if (year_index !== numYears)
+          {
+            if (index !== -1)
+            {
+              quanityData_CharterGuide[index][year_y] += Number(charterGuide[3])
+               amountData_CharterGuide[index][year_y] += Number(charterGuide[4])
+            }
+            else
+            {
+              quanityData_CharterGuide.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
+               amountData_CharterGuide.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
+              quanityData_CharterGuide[quanityData_CharterGuide.length - 1][year_y] = Number(charterGuide[3])
+               amountData_CharterGuide[amountData_CharterGuide.length  - 1][year_y] = Number(charterGuide[4])
+            }
+
+            if (index_All !== -1)
+            {
+              quanityData_All[index_All][year_y] += Number(charterGuide[3])
+               amountData_All[index_All][year_y] += Number(charterGuide[4])
+            }
+            else
+            {
+              quanityData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
+               amountData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
+              quanityData_All[quanityData_All.length - 1][year_y] = Number(charterGuide[3])
+               amountData_All[amountData_All.length  - 1][year_y] = Number(charterGuide[4])
+            }
+          }
+          else
+          {
+            if (index !== -1)
+            {
+              if (isNotBlank(quanityData_CharterGuide[index][15]))
+              {
+                quanityData_CharterGuide[index][15] += '\n' + charterGuide[0]
+                 amountData_CharterGuide[index][15] += '\n' + charterGuide[0]
+              }
+              else
+              {
+                quanityData_CharterGuide[index][15] = charterGuide[0]
+                 amountData_CharterGuide[index][15] = charterGuide[0]
+              }
+
+              quanityData_CharterGuide[index][3] += Number(charterGuide[3])
+               amountData_CharterGuide[index][3] += Number(charterGuide[4])  
+            }
+            else
+            {
+              quanityData_CharterGuide.push([item[1], 0, 0, Number(charterGuide[3]), ...new Array(numYears - 1).fill(0), charterGuide[0]])
+               amountData_CharterGuide.push([item[1], 0, 0, Number(charterGuide[4]), ...new Array(numYears - 1).fill(0), charterGuide[0]])
+            }
+
+            if (index_All !== -1)
+            {
+              if (isNotBlank(quanityData_All[index_All][15]))
+              {
+                quanityData_All[index_All][15] += '\n' + charterGuide[0]
+                 amountData_All[index_All][15] += '\n' + charterGuide[0]
+              }
+              else
+              {
+                quanityData_All[index_All][15] = charterGuide[0]
+                 amountData_All[index_All][15] = charterGuide[0]
+              }
+
+              quanityData_All[index_All][3] += Number(charterGuide[3])
+               amountData_All[index_All][3] += Number(charterGuide[4])
+            }
+            else
+            {
+              quanityData_All.push([item[1], 0, 0, Number(charterGuide[3]), ...new Array(numYears - 1).fill(0), charterGuide[0]])
+               amountData_All.push([item[1], 0, 0, Number(charterGuide[4]), ...new Array(numYears - 1).fill(0), charterGuide[0]])
+            }
+          }
+        }
+      }
+    })
   })
 
-  const numRows = activeSkus.unshift(header1, header2)
-  sheet.clearContents().getRange(1, 1, numRows, 13).setValues(activeSkus)
-  sheet.deleteRows(numRows + 1, maxRows - numRows);
+  quanityData_Lodge = quanityData_Lodge.map((item, i) => {
+      item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
+      item[2] = Math.round((item[3] + item[6] + item[7] + item[8])*5/2)/10; // Average - Covid
+      item = item.map(qty => (isQtyNotZero(qty)) ? qty : '')
+      amountData_Lodge[i][1] = 
+        Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][4] + amountData_Lodge[i][5] + amountData_Lodge[i][6] + amountData_Lodge[i][7] + amountData_Lodge[i][8])*50/3)/100; // Average
+      amountData_Lodge[i][2] =  Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][6] + amountData_Lodge[i][7] + amountData_Lodge[i][8])*25)/100; // Average - Covid
+      amountData_Lodge[i] = amountData_Lodge[i].map(qty => (isQtyNotZero(qty)) ? qty : '')
+      return item
+    })
+
+  quanityData_CharterGuide = quanityData_CharterGuide.map((item, i) => {
+      item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
+      item[2] = Math.round((item[3] + item[6] + item[7] + item[8])*5/2)/10; // Average - Covid
+      item = item.map(qty => (isQtyNotZero(qty)) ? qty : '')
+      amountData_CharterGuide[i][1] = 
+        Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][4] + amountData_CharterGuide[i][5] + amountData_CharterGuide[i][6] + amountData_CharterGuide[i][7] + amountData_CharterGuide[i][8])*50/3)/100; // Average
+      amountData_CharterGuide[i][2] =  Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][6] + amountData_CharterGuide[i][7] + amountData_CharterGuide[i][8])*25)/100; // Average - Covid
+      amountData_CharterGuide[i] = amountData_CharterGuide[i].map(qty => (isQtyNotZero(qty)) ? qty : '')
+      return item
+    })
+
+  quanityData_All = quanityData_All.map((item, i) => {
+      item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
+      item[2] = Math.round((item[3] + item[6] + item[7] + item[8])*5/2)/10; // Average - Covid
+      item = item.map(qty => (isQtyNotZero(qty)) ? qty : '')
+      amountData_All[i][1] = 
+        Math.round((amountData_All[i][3] + amountData_All[i][4] + amountData_All[i][5] + amountData_All[i][6] + amountData_All[i][7] + amountData_All[i][8])*50/3)/100; // Average
+      amountData_All[i][2] =  Math.round((amountData_All[i][3] + amountData_All[i][6] + amountData_All[i][7] + amountData_All[i][8])*25)/100; // Average - Covid
+      amountData_All[i] = amountData_All[i].map(qty => (isQtyNotZero(qty)) ? qty : '')
+      return item
+    })
+
+  const header = ['Descriptions', 'AVG (6 yr)', 'AVG - CoV', ...years.reverse(), 'Customers purchased in 2023'];
+  const numRows_lodgeQty = quanityData_Lodge.unshift(header)
+  const numRows_lodgeAmt = amountData_Lodge.unshift(header)
+  const numRows_charterGuideQty = quanityData_CharterGuide.unshift(header)
+  const numRows_charterGuideAmt = amountData_CharterGuide.unshift(header)
+  const numRows_AllQty = quanityData_All.unshift(header)
+  const numRows_AllAmt = amountData_All.unshift(header)
+
+  spreadsheet.getSheetByName('Lodge Quantity Data').clear().getRange(1, 1, numRows_lodgeQty, quanityData_Lodge[0].length).setValues(quanityData_Lodge)
+  spreadsheet.getSheetByName('Lodge Amount Data').clear().getRange(1, 1, numRows_lodgeAmt, amountData_Lodge[0].length).setValues(amountData_Lodge)
+  spreadsheet.getSheetByName('Charter & Guide Quantity Data').clear().getRange(1, 1, numRows_charterGuideQty, quanityData_CharterGuide[0].length).setValues(quanityData_CharterGuide)
+  spreadsheet.getSheetByName('Charter & Guide Amount Data').clear().getRange(1, 1, numRows_charterGuideAmt, amountData_CharterGuide[0].length).setValues(amountData_CharterGuide)
+  spreadsheet.getSheetByName('Quantity Data').clear().getRange(1, 1, numRows_AllQty, quanityData_All[0].length).setValues(quanityData_All)
+  spreadsheet.getSheetByName('Amount Data').clear().getRange(1, 1, numRows_AllAmt, amountData_All[0].length).setValues(amountData_All)
+  spreadsheet.toast('All Amount / Quantity data for Lodge, Charter, and Guide customers has been updated.', 'COMPLETE', 60)
 }
 
-function removeNonActiveItems()
-{
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const maxRows = sheet.getLastRow()
-  const values = sheet.getSheetValues(1, 1, maxRows, 15)
-  const header1 = values.shift()
-  const header2 = values.shift()
-  const activeSkus = values.filter(v => v[1] !== '')
-  const numRows = activeSkus.unshift(header1, header2)
-  sheet.clearContents().getRange(1, 1, numRows, 15).setValues(activeSkus)
-  sheet.deleteRows(numRows + 1, maxRows - numRows);
-}
-
-function updateDescriptions()
-{
-  const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const range = sheet.getRange(2, 1, sheet.getLastRow() - 1, 10);
-  const values = range.getValues()
-
-  for (var sku = 0; sku < values.length; sku++)
-  {
-    for (var i = 0; i < csvData.length; i++)
-    {
-      if (csvData[i][10] === 'A' && values[sku][9] == csvData[i][6]) // Active and Item Number matches
-      {
-        values[sku][0] = csvData[i][1] // Add the description
-        break;
-      }
-    }
-
-    if (i === csvData.length)
-      values[sku][0] = values[sku][9] + ' - ' + values[sku][0] + ' - - -'
-  }
-
-  range.setValues(values)
-}
-
-function reformatYearlyData()
-{
-  const spreadsheet = SpreadsheetApp.getActive()
-  const ssLodge = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1o8BB1RWkxK1uo81tBjuxGc3VWArvCdhaBctQDssPDJ0/edit")
-  const ssCharter = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1kKS6yazOEtCsH-QCLClUI_6NU47wHfRb8CIs-UTZa1U/edit")
-  const numYears = 11;
-  const firstYear = 2012;
-  var lodgeData, charterData, year;
-
-  for (var s = 7; s < numYears; s++)
-  {
-    year = (firstYear + s).toString()
-    lodgeData = ssLodge.getSheetByName((firstYear + s).toString()).getDataRange().getValues().filter(u => u[17] !== '')
-    charterData = ssCharter.getSheetByName((firstYear + s).toString()).getDataRange().getValues().filter(v => v[17] !== '')
-    spreadsheet.insertSheet(year + ' - Lodge').getRange(2, 1, lodgeData.length, lodgeData[0].length).setNumberFormat('@').setValues(lodgeData)
-    spreadsheet.insertSheet(year + ' - Charter & Guide').getRange(2, 1, charterData.length, charterData[0].length).setNumberFormat('@').setValues(charterData)
-  }
-}
-
-function deleteRows()
-{
-  const spreadsheet = SpreadsheetApp.getActive();
-  const sheets = spreadsheet.getSheets();
-  sheets.shift()
-  sheets.shift()
-  var values;
-
-  for (var s = 0; s < sheets.length; s++)
-  {
-    values = sheets[s].getDataRange().getValues().filter(v =>
-      v[ 2] !== '' || v[ 3] !== '' || v[ 4] !== '' || v[ 5] !== '' ||
-      v[ 6] !== '' || v[ 7] !== '' || v[ 8] !== '' || v[ 9] !== '' ||
-      v[10] !== '' || v[11] !== '' || v[12] !== '')
-
-    sheets[s].clearContents().getRange(1, 1, values.length, values[0].length).setValues(values)
-  }
-}
-
-function deleteEmptyColumns()
-{
-  const sheets = SpreadsheetApp.getActive().getSheets();
-  sheets.shift()
-  sheets.shift();
-
-  for (var s = 0; s < sheets.length; s++)
-  {
-    sheets[s].deleteColumn(27)
-    sheets[s].deleteColumns(19, 7)
-    sheets[s].deleteColumns(13, 5)
-    sheets[s].deleteColumns(6, 6)
-    sheets[s].deleteColumns(2, 3)
-  }
-}
-
-function fillInCustomerName()
-{
-  const sheets = SpreadsheetApp.getActive().getSheets();
-  sheets.shift()
-  sheets.shift();
-  var rng, account, name
-
-  for (var s = 0; s < sheets.length; s++)
-  {
-    rng = sheets[s].getRange(3, 1, sheets[s].getLastRow() - 2, 2)
-    values = rng.getValues();
-
-    for (var i = 0; i < values.length; i++)
-    {
-      if (values[i][0] !== '')
-      {
-        account = values[i][0];
-        name = values[i][1];
-      }
-      else
-      {
-        values[i][0] = account;
-        values[i][1] = name;
-      }
-    }
-
-    rng.setValues(values)
-  }
-}
-
-function removeCustomers()
+/**
+ * This function takes all of the yearly invoice data and concatenates it into one meta set of invoice data. This function can be run on its own or
+ * it is Trigger via an import of invoice data.
+ * 
+ * @author Jarren Ralf
+ */
+function concatenateAllData()
 {
   const spreadsheet = SpreadsheetApp.getActive()
-  const sheets = spreadsheet.getSheets();
-  sheets.shift();
-  sheets.shift()
-  const lodgeAccounts = sheets.shift().getDataRange().getValues().map(v => v[0]);
-  const charterAccounts = sheets.shift().getDataRange().getValues().map(v => v[0]);
-  var values, data, numRows, maxRows;
+  const currentYear = new Date().getFullYear()
+  var sheet, allData = [];
 
-  for (var s = 0; s < sheets.length; s++)
+  new Array(currentYear - 2012 + 1).fill('').map((_, y) => (currentYear - y).toString()).map(year => {
+    sheet = spreadsheet.getSheetByName(year)
+    allData.push(...sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 8).reverse())
+  })
+
+  const lastRow = allData.unshift(['Item Description', 'Customer Name', 'Date', 'Invoice #', 'Location', 'Salesperson', 'Quantity', 'Amount']);
+  spreadsheet.getSheetByName('All Data').clearContents().getRange(1, 1, lastRow, 8).setValues(allData)
+}
+
+/**
+ * This function configures the yearly invoice data into the format that is desired for the spreadsheet to function optimally
+ * 
+ * @param {Object[][]}    values    : The values of the data that were just imported into the spreadsheet
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet
+ * @author Jarren Ralf
+ */
+function configureYearlyInvoiceData(values, spreadsheet)
+{
+  const currentYear = new Date().getFullYear();
+  const customerSheet = spreadsheet.getSheetByName('Customer List');
+  const accounts = customerSheet.getSheetValues(2, 1, customerSheet.getLastRow() - 1, 1).map(v => v[0].toString().trim())
+  values.shift()
+  values.pop() // Remove the final row which contains descriptive stats
+  const preData = removeNonImformativeSKUs(values.filter(d => accounts.includes(d[8].toString().trim())).sort(sortByDateThenInvoiveNumber))
+  const data = reformatData(preData)
+  const year = new Array(currentYear - 2012 + 1).fill('').map((_, y) => (currentYear - y).toString()).reverse().find(p => p == data[0][2].getFullYear()) // The year that the data is representing
+  const isSingleYear = data.every(date => date[2].getFullYear() == year);
+
+  if (isSingleYear)
   {
-    if (sheets[s].getSheetName().split(' - ')[1] === 'Lodge')
+    const numCols = 10;
+    const sheets = spreadsheet.getSheets();
+    const previousSheet = sheets.find(sheet => sheet.getSheetName() == year)
+    var indexAdjustment = 2010
+
+    if (previousSheet != null)
     {
-      values = sheets[s].getDataRange().getValues()
-      maxRows = values.length
-      values.shift()
-      header = values.shift()
-      data = values.filter(a => lodgeAccounts.includes(a[0]))
-      numRows = data.unshift(header)
-      sheets[s].clearContents().getRange(1, 1, numRows, 6).setValues(data)
-      sheets[s].deleteRows(numRows + 1, maxRows - numRows)
+      indexAdjustment--;
+      spreadsheet.deleteSheet(previousSheet)
     }
-    else
-    {
-      values = sheets[s].getDataRange().getValues()
-      maxRows = values.length
-      values.shift()
-      header = values.shift()
-      data = values.filter(a => charterAccounts.includes(a[0]))
-      numRows = data.unshift(header)
-      sheets[s].clearContents().getRange(1, 1, numRows, 6).setValues(data)
-      sheets[s].deleteRows(numRows + 1, maxRows - numRows)
-    } 
-  }
-}
-
-function collectYearlyData()
-{
-  const spreadsheet = SpreadsheetApp.getActive()
-  const sheets = spreadsheet.getSheets();
-  sheets.shift();
-  sheets.shift()
-  var data, index, maxRows, numRows, items, skuList = [];
-
-  for (var s = 0; s < sheets.length; s++)
-  {
-    data = sheets[s].getDataRange().getValues()
-    items = [['Item Number', 'Item Description', 'Lodge', '', 'Charter & Guide', '', 'Customers'], 
-             ['', '', 'Quantity', 'Amount', 'Quantity', 'Amount', '']];
-    maxRows = data.length
-
-    if (sheets[s].getSheetName().split(' - ')[1] === 'Lodge')
-    {
-      for (var i = 1; i < data.length; i++)
-      {
-        index = skuList.indexOf(data[i][2]);
-
-        if (index === -1)
-        {
-          skuList.push(data[i][2])
-          items.push([data[i][2], data[i][3], data[i][4], data[i][5], 0, 0, data[i][1]])
-        }
-        else
-        {
-          items[index + 2][2] += data[i][4]
-          items[index + 2][3] += data[i][5]
-          items[index + 2][6] += ', ' + data[i][1]
-        }
-      }
-    }
-    else
-    {
-      for (var i = 1; i < data.length; i++)
-      {
-        index = skuList.indexOf(data[i][2]);
-
-        if (index === -1)
-        {
-          skuList.push(data[i][2])
-          items.push([data[i][2], data[i][3], 0, 0, data[i][4], data[i][5], data[i][1]])
-        }
-        else
-        {
-          items[index + 2][4] += data[i][4]
-          items[index + 2][5] += data[i][5]
-          items[index + 2][6] += ', ' + data[i][1]
-        }
-      }
-    }
-
-    numRows = items.length;
-    sheets[s].clearContents().getRange(1, 1, numRows, items[0].length).setValues(items)
-    sheets[s].deleteRows(numRows + 1, maxRows - numRows)
-    skuList.length = 0;
-  }
-}
-
-function removeSheets()
-{
-  const spreadsheet = SpreadsheetApp.getActive();
-  const sheets = spreadsheet.getSheets();
-  const sheetNames = sheets.map(s => s.getSheetName());
-
-  for (var sheet = 0; sheet < sheetNames.length; sheet++)
-  {
-    if (sheetNames[sheet].split(' - ')[1])
-      spreadsheet.deleteSheet(sheets[sheet])
-  }
-}
-
-function replaceZerosWithBlanks()
-{
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const range = sheet.getDataRange();
-  const values = range.getValues();
-
-  for (var i = 2; i < values.length; i++)
-  {
-    for (var j = 2; j < values[0].length; j++)
-    {
-      if (values[i][j] === 0)
-        values[i][j] = '';
-    } 
-  }
-
-  range.setValues(values)
-}
-
-function fullDataCombine()
-{
-  const spreadsheet = SpreadsheetApp.getActive();
-  const sheets = spreadsheet.getSheets();
-  sheets.shift();
-  sheets.shift()
-  const dataSheet = sheets.shift()
-  const data = dataSheet.getDataRange().getValues()
-  const skus = data.map(sku => sku[0]);
-  var values, index;
-
-  for (var s = 0; s < sheets.length; s++)
-  {
-    values = sheets[s].getSheetValues(3, 1, sheets[s].getLastRow() - 2, 7)
     
-    for (var i = 0; i < values.length; i++)
-    {
-      index = skus.indexOf(values[i][0])
+    SpreadsheetApp.flush();
+    const newSheet = spreadsheet.insertSheet(year, sheets.length - year + indexAdjustment).hideSheet().setColumnWidths(1, 2, 350).setColumnWidths(3, 7, 85).setColumnWidth(10, 150);
+    SpreadsheetApp.flush();
+    const lastRow = data.unshift(['Item Description', 'Customer Name', 'Date', 'Invoice #', 'Location', 'Salesperson', 'Quantity', 'Amount', 'Customer', 'Item Number']);
+    newSheet.deleteColumns(11, 16)
+    newSheet.setFrozenRows(1)
+    newSheet.getRange(1, 1, 1, numCols).setFontSize(11).setFontWeight('bold').offset(0, 0, lastRow, numCols).setNumberFormat('@').setValues(data)
 
-      if (index === -1)
-      {
-        skus.push(values[i][0])
-        data.push([values[i][0], values[i][1], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, values[i][6]])
-        data[data.length - 1][ 3 + s] = values[i][2]
-        data[data.length - 1][14 + s] = values[i][3]
-        data[data.length - 1][25 + s] = values[i][4]
-        data[data.length - 1][36 + s] = values[i][5]
-      }
-      else
-      {
-        data[index][ 3 + s] = values[i][2]
-        data[index][14 + s] = values[i][3]
-        data[index][25 + s] = values[i][4]
-        data[index][36 + s] = values[i][5]
-        data[index][46] += ', ' + values[i][6]
-      }
-    }
+    ScriptApp.newTrigger('concatenateAllData').timeBased().after(500).create() // Concatenate all of the data
+    spreadsheet.getSheetByName('Search for Invoice #s').getRange(1, 1).activate()
   }
-
-  sheets[0].setName('Data').clearContents().getRange(1, 1, data.length, data[0].length).setValues(data)
+  else
+    Browser.msgBox('Incorrect Data', 'Data contains more than one year.', Browser.Buttons.OK)
 }
 
-function combineData()
-{
-  const spreadsheet = SpreadsheetApp.getActive();
-  const sheets = spreadsheet.getSheets();
-  sheets.shift();
-  sheets.shift()
-  var values, additionalValues, skus, index;
-
-  for (var s = 0; s < sheets.length; s += 2)
-  {
-    values = sheets[s].getSheetValues(3, 1, sheets[s].getLastRow() - 2, 7)
-    values.unshift(['Item Number', 'Item Description', 'Lodge', '', 'Charter & Guide', '', 'Customers'], 
-                   ['', '', 'Quantity', 'Amount', 'Quantity', 'Amount', ''])
-    skus = values.map(sku => sku[0]);
-    additionalValues = sheets[s + 1].getSheetValues(3, 1, sheets[s + 1].getLastRow() - 2, 7)
-    
-    for (var i = 0; i < additionalValues.length; i++)
-    {
-      index = skus.indexOf(additionalValues[i][0])
-
-      if (index === -1)
-      {
-        skus.push(additionalValues[i][0])
-        values.push(additionalValues[i])
-      }
-      else
-      {
-        values[index][4] = additionalValues[i][4]
-        values[index][5] = additionalValues[i][5]
-        values[index][6] += ', ' + additionalValues[i][6]
-      }
-    }
-
-    sheets[s].setName(sheets[s].getSheetName().split(' - ')[0]).clearContents().getRange(1, 1, values.length, values[0].length).setValues(values)
-    skus.length = 0;
-  }
-}
-
+/**
+ * This function creates the chart for the total sales amount for all lodges, charters, and guides.
+ * 
+ * @author Jarren Ralf
+ */
 function createChartForSalesData()
 {
-  const numYears = 11;
+  const currentYear = new Date().getFullYear();
+  const numYears = currentYear - 2012 + 1
   const spreadsheet = SpreadsheetApp.getActive()
   const salesDataSheet = spreadsheet.getSheetByName('Annual Sales Data');
   const dataRng = salesDataSheet.getRange(3, 1, numYears, 2)
@@ -616,17 +451,6 @@ function createChartForSalesData()
 }
 
 /**
- * This function take a number and rounds it to two decimals to make it suitable as a price.
- * 
- * @param {Number} num : The given number 
- * @return A number rounded to two decimals
- */
-function twoDecimals(num)
-{
-  return Math.round((num + Number.EPSILON) * 100) / 100
-}
-
-/**
  * This function checks if a given value is precisely a non-blank string.
  * 
  * @param  {String}  value : A given string.
@@ -639,7 +463,123 @@ function isNotBlank(value)
 }
 
 /**
- * This function...
+ * This function checks if a given number is precisely a non-zero number.
+ * 
+ * @param  {Number}  num : A given number.
+ * @return {Boolean} Returns a boolean based on whether an inputted number is not-zero or not.
+ * @author Jarren Ralf
+ */
+function isQtyNotZero(num)
+{
+  return num !== 0;
+}
+
+/**
+ * This function process the imported data.
+ * 
+ * @param {Event Object} : The event object on an spreadsheet edit.
+ * @author Jarren Ralf
+ */
+function processImportedData(e)
+{
+  if (e.changeType === 'INSERT_GRID')
+  {
+    var spreadsheet = e.source;
+    var sheets = spreadsheet.getSheets();
+    var info, numRows = 0, numCols = 1, maxRow = 2, maxCol = 3, isYearlyInvoiceData = 4;
+
+    for (var sheet = sheets.length - 1; sheet >= 0; sheet--) // Loop through all of the sheets in this spreadsheet and find the new one
+    {
+      if (sheets[sheet].getType() == SpreadsheetApp.SheetType.GRID) // Some sheets in this spreadsheet are OBJECT sheets because they contain full charts
+      {
+        info = [
+          sheets[sheet].getLastRow(),
+          sheets[sheet].getLastColumn(),
+          sheets[sheet].getMaxRows(),
+          sheets[sheet].getMaxColumns(),
+          sheets[sheet].getRange(1, 7).getValue().toString().includes('Quantity Specif')
+        ]
+      
+        // A new sheet is imported by File -> Import -> Insert new sheet(s) - The left disjunct is for a csv and the right disjunct is for an excel file
+        if ((info[maxRow] - info[numRows] === 2 && info[maxCol] - info[numCols] === 2) || 
+            (info[maxRow] === 1000 && info[maxCol] === 26 && info[numRows] !== 0 && info[numCols] !== 0) ||
+            info[isYearlyInvoiceData]) 
+        {
+          spreadsheet.toast('Processing imported data...', '', 60)
+          const values = sheets[sheet].getSheetValues(1, 1, info[numRows], info[numCols]); 
+          var fileName = sheets[sheet].getSheetName()
+
+          if (info[isYearlyInvoiceData])
+            configureYearlyInvoiceData(values, spreadsheet)
+
+          if (sheets[sheet].getSheetName().substring(0, 7) !== "Copy Of") // Don't delete the sheets that are duplicates
+            spreadsheet.deleteSheet(sheets[sheet]) // Delete the new sheet that was created
+
+          spreadsheet.toast('The data will be updated in less than 5 minutes.', 'Import Complete.')
+          break;
+        }
+      }
+    }
+
+    // Try and find the file created and delete it
+    var file1 = DriveApp.getFilesByName(fileName + '.xlsx')
+    var file2 = DriveApp.getFilesByName("Book1.xlsx")
+
+    if (file1.hasNext())
+      file1.next().setTrashed(true)
+
+    if (file2.hasNext())
+      file2.next().setTrashed(true)
+  }
+}
+
+/**
+ * This function checks the invoice numbers and reformats the numbers that come from countersales so that they are all displayed in the same format. It also changes
+ * the description to the standard Google description so that the items are more easily searched for.
+ * 
+ * @param {String[][]} preData : The preformatted data.
+ * @return {String[][]} The reformatted data
+ * @author Jarren Ralf
+ */
+function reformatData(preData)
+{
+  const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString())
+  var item;
+
+  return preData.map(itemVals => {
+    item = csvData.find(val => val[6] == itemVals[9])
+
+    if (item != null)
+      return (itemVals[3].toString().length === 9 && itemVals[3].toString().charAt('I')) ?
+        [item[1], itemVals[1], itemVals[2], itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] :
+      (itemVals[3].toString().length === 8 && itemVals[3].toString().charAt('I')) ?
+        [item[1], itemVals[1], itemVals[2], '0' + itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
+        [item[1], itemVals[1], itemVals[2], itemVals[3], itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]]
+    else
+      return (itemVals[3].toString().length === 9 && itemVals[3].toString().charAt('I')) ? 
+        [itemVals[9] + ' - ' + itemVals[0] + ' - - -', itemVals[1], itemVals[2], itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
+      (itemVals[3].toString().length === 8 && itemVals[3].toString().charAt('I')) ? 
+        [itemVals[9] + ' - ' + itemVals[0] + ' - - -', itemVals[1], itemVals[2], '0' + itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
+        [itemVals[9] + ' - ' + itemVals[0] + ' - - -', itemVals[1], itemVals[2], itemVals[3], itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]]
+  })
+}
+
+/**
+ * This function receives the yearly invoice data and it removes the non-imformative SKU numbers, such as the fishing tackle, freight, and marine sale SKUs.
+ * 
+ * @param {String[][]} data : The yearly invoice data.
+ * @return {String[][]} The yearly invoice data with non-imformative SKUs filtered out.
+ * @author Jarren Ralf
+ */
+function removeNonImformativeSKUs(data)
+{
+  const fishingTackleSKUs = ["80000129", "80000389", "80000549", "80000349", "80000399", "80000499", "80000799", "80000409", "80000439", "80000599", "80000199", "80000249", "80000459", "80000699", "80000739", "80000999", "80001099", "80001149", "80001249", "80001499", "80001949", "80001999", "80000039", "80000089", "80000829", "80000259", "80000589", "80000899", "80000299", "80001199", "80001599", "80000649", "80000849", "80000025", "80000169", "80000579", "80000939", "80001299", "80000139", "80000329", "80000519", "80000629", "80000769", "80000015", "80000149", "80001549", "80000049", "80000949", "80001899", "80000020", "80000079", "80000179", "80000989", "80000449", "80000429", "80000099", "80001699", "80001649", "80001799", "80001849", "80000029", "80000339", "80000749", "80001399", "80000189", "80000289", "80000689", "80000069", "80000279", "80000159", "80000859", "80000729", "80000979", "80000059", "80000229", "80000119", "80000209", "80000219", "80000319", "80000359", "80000369", "80000419", "80000529", "80000639", "80000889", "80001749", "80000789", "80000609", "80000509", "80001049", "80000539", "80000659", "80001449", "80000109", "80000489", "80000759", "80000669", "80000469", "80000379", "80000869", "80000479", "80000679", "80000239", "80000719", "80000569", "80000709", "80000309", "80000919", "80001349", "80000879", "80000929", "80000269", "80000819", "80000619", "80000839", "80000959", "7000F6000", "7000F10000", "80002999", "7000F4000", "7000F5000", "7000F7000", "7000F3000", "7000F8000", "7000F20000", "7000F30000", "7000F9000", "80000779", "80000559", '7000M10000', '7000M200000', '7000M100000', '7000M125000', '7000M15000', '7000M150000', '7000M20000', '7000M3000', '7000M30000', '7000M4000', '7000M5000', '7000M50000', '7000M6000', '7000M7000', '7000M75000', '7000M8000', '7000M9000', 'FREIGHT', 'MISCITEM', 'MISCWEB']
+
+  return data.filter(v => !fishingTackleSKUs.includes(v[9].toString()))
+}
+
+/**
+ * This function searches all of the data for the keywords chosen by the user for the purchase of discovering the invoice numbers that contain the keywords.
  * 
  * @param {Spreadsheet}  spreadsheet : The spreadsheet that is being edited
  * @param    {Sheet}        sheet    : The sheet that is being edited
@@ -793,7 +733,8 @@ function searchForInvoice(spreadsheet, sheet)
 }
 
 /**
- * This function...
+ * This function searches for either the amount or quantity of product sold to a particular set of customers, 
+ * based on which option the user has selected from the checkboxes on the search sheet.
  * 
  * @param {Spreadsheet}  spreadsheet : The spreadsheet that is being edited
  * @param    {Sheet}        sheet    : The sheet that is being edited
@@ -802,10 +743,10 @@ function searchForInvoice(spreadsheet, sheet)
 function searchForQuantityOrAmount(spreadsheet, sheet)
 {
   const startTime = new Date().getTime();
-  const searchResultsDisplayRange = sheet.getRange(1, 11); // The range that will display the number of items found by the search
-  const functionRunTimeRange = sheet.getRange(2, 11);      // The range that will display the runtimes for the search and formatting
-  const itemSearchFullRange = sheet.getRange(6, 1, sheet.getMaxRows() - 5, 13); // The entire range of the Item Search page
-  const checkboxes = sheet.getSheetValues(2, 4, 2, 7);
+  const searchResultsDisplayRange = sheet.getRange(1, 12); // The range that will display the number of items found by the search
+  const functionRunTimeRange = sheet.getRange(2, 12);      // The range that will display the runtimes for the search and formatting
+  const itemSearchFullRange = sheet.getRange(6, 1, sheet.getMaxRows() - 5, 16); // The entire range of the Item Search page
+  const checkboxes = sheet.getSheetValues(2, 5, 2, 7);
   const output = [];
   const searchesOrNot = sheet.getRange(1, 1, 3).clearFormat()                                       // Clear the formatting of the range of the search box
     .setBorder(true, true, true, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK) // Set the border
@@ -824,7 +765,7 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
     if (searchesOrNot.length === 1) // The word 'not' WASN'T found in the string
     {
       const dataSheet = selectDataSheet(spreadsheet, checkboxes);
-      const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, 13);
+      const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, 16);
       const numSearches = searches.length; // The number searches
       var numSearchWords;
 
@@ -855,7 +796,7 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
       var dontIncludeTheseWords = searchesOrNot[1].split(/\s+/);
 
       const dataSheet = selectDataSheet(spreadsheet, checkboxes);
-      const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, 13);
+      const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, 16);
       const numSearches = searches.length; // The number searches
       var numSearchWords;
 
@@ -905,12 +846,10 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
     }
     else
     {
-      var numFormats = (checkboxes[0][0]) ? 
-        new Array(numItems).fill(['@', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '$#,##0.00', '@']) : 
-        new Array(numItems).fill(['@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@', '@']);
+      var numFormats = (checkboxes[0][0]) ? new Array(numItems).fill(['@', ...new Array(14).fill('$#,##0.00'), '@']) : new Array(numItems).fill([...new Array(16).fill('@')]);
       sheet.getRange('B8').activate(); // Move the user to the top of the search items
       itemSearchFullRange.clearContent().setBackground('white'); // Clear content and reset the text format
-      sheet.getRange(6, 1, numItems, 13).setNumberFormats(numFormats).setValues(output);
+      sheet.getRange(6, 1, numItems, output[0].length).setNumberFormats(numFormats).setValues(output);
       (numItems !== 1) ? searchResultsDisplayRange.setValue(numItems + " results found.") : searchResultsDisplayRange.setValue("1 result found.");
     }
 
@@ -927,6 +866,14 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
   functionRunTimeRange.setValue((new Date().getTime() - startTime)/1000 + " seconds");
 }
 
+/**
+ * This function returns the sheet that contains the data that the user is interested in. The choice of sheet is directly based on the checkboxes selected on the 
+ * item search page.
+ * 
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet.
+ * @param {Object[][]}  checkboxes  : The values of the checkboxes
+ * @author Jarren Ralf 
+ */
 function selectDataSheet(spreadsheet, checkboxes)
 {
   if (checkboxes[0][0]) // Amount
@@ -947,4 +894,23 @@ function selectDataSheet(spreadsheet, checkboxes)
     else if (checkboxes[1][6]) // Both
       return spreadsheet.getSheetByName('Quantity Data')
   }
+}
+
+/**
+ * This function sorts the invoice data of a particular year via the date first, then sub-sorts lines with the same date via their invoice number.
+ */
+function sortByDateThenInvoiveNumber(a, b)
+{
+  return (a[2] > b[2]) ? 1 : (a[2] < b[2]) ? -1 : (a[3] > b[3]) ? 1 : (a[3] < b[3]) ? -1 : 0;
+}
+
+/**
+ * This function take a number and rounds it to two decimals to make it suitable as a price.
+ * 
+ * @param {Number} num : The given number 
+ * @return A number rounded to two decimals
+ */
+function twoDecimals(num)
+{
+  return Math.round((num + Number.EPSILON) * 100) / 100
 }
