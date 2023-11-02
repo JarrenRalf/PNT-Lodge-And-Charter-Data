@@ -570,7 +570,7 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
           .offset(0, 0, lastRow, numCols).setHorizontalAlignments(new Array(lastRow).fill(['left', 'left', 'left', 'left', 'right', 'right'])).setNumberFormat('@').setValues(data)
         newSheet.getRangeList(ranges).setBorder(true, false, true, false, false, false).setBackground('#c0c0c0').setFontWeight('bold')
 
-        const dashboard = spreadsheet.getSheetByName('Dashboard').activate()
+        const dashboard = spreadsheet.getSheetByName('Dashboard')
 
         if (currentYear > Number(dashboard.getRange('E2').getValue())) // The dashboard does not contain the current year
         {
@@ -1828,7 +1828,7 @@ function updateAllCharts(currentSheet, spreadsheet)
   var chart, chartTitleInfo, currentTime = 0;
 
   if (currentSheet === 0) // If the cache was null, set the initial sheet index to 3
-    currentSheet = 3;
+    currentSheet = 4;
 
   // Create the spreadsheets, notice that the index varibale needs to be converted to a number since the Cache stores data as string values
   for (var sheet = currentSheet; sheet < numCustomerSheets; sheet = sheet + 2)
@@ -1839,8 +1839,8 @@ function updateAllCharts(currentSheet, spreadsheet)
       return [sheet < numCustomerSheets, sheet, currentTime];
     else
     {
-      spreadsheet.deleteSheet(sheets[sheet + 1]) // Delete the chart
-      chartTitleInfo = sheets[sheet].getRange(1, 2, 1, 3).getDisplayValues()[0]
+      spreadsheet.deleteSheet(sheets[sheet + 1]); // Delete the chart
+      chartTitleInfo = sheets[sheet].getRange(1, 2, 1, 3).getDisplayValues()[0];
 
       chart = sheets[sheet].newChart()
         .asColumnChart()
