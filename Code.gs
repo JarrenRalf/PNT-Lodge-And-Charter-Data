@@ -572,11 +572,12 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
 
         const dashboard = spreadsheet.getSheetByName('Dashboard')
 
-        if (currentYear > Number(dashboard.getRange('E2').getValue())) // The dashboard does not contain the current year
+        if (currentYear > Number(dashboard.getRange('E2').getValue())) // The current year is not represented on the Dashboard, so add a column for it and make the relevant changes to formulas
         {
           const dashboard_lastRow = dashboard.getLastRow();
           dashboard.insertColumnBefore(5).getRange(2, 5, 2, 1).setValues([[currentYear], ['=SUM(E4:E' + dashboard_lastRow + ')']])
           const grandTotalRange = dashboard.getRange(4, 4, dashboard_lastRow - 3)
+          dashboard.getRange(1, 5, 1, 2).merge();
           grandTotalRange.setFormulas(grandTotalRange.getFormulas().map(formula => [formula[0].replace('F', 'E')]))
         }
 
@@ -621,7 +622,7 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
 
     const dashboard = spreadsheet.getSheetByName('Dashboard')
 
-    if (currentYear > Number(dashboard.getRange('E2').getValue())) // The dashboard does not contain the current year
+    if (currentYear > Number(dashboard.getRange('E2').getValue())) // The current year is not represented on the Dashboard, so add a column for it and make the relevant changes to formulas
     {
       const dashboard_lastRow = dashboard.getLastRow();
       dashboard.insertColumnBefore(5).getRange(2, 5, 2, 1).setValues([[currentYear], ['=SUM(E4:E' + dashboard_lastRow + ')']])
@@ -1827,7 +1828,7 @@ function updateAllCharts(currentSheet, spreadsheet)
   const CUST_NAME = 0, SALES_TOTAL = 2;
   var chart, chartTitleInfo, currentTime = 0;
 
-  if (currentSheet === 0) // If the cache was null, set the initial sheet index to 3
+  if (currentSheet === 0) // If the cache was null, set the initial sheet index to 4
     currentSheet = 4;
 
   // Create the spreadsheets, notice that the index varibale needs to be converted to a number since the Cache stores data as string values
@@ -1984,8 +1985,9 @@ function updateAllCustomersSalesData(spreadsheet)
 
   const today = new Date();
   const currentYear = today.getFullYear();
-  const currentDate = today.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][today.getMonth()] + ' ' + currentYear;
-  const numYears = currentYear - 2012 + 1
+  const currentDate = (today.getDate() < 10) ? '0' + today.getDate() : today.getDate() + ' ' + 
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][today.getMonth()] + ' ' + currentYear; // The current date is shown on the customer's data page
+  const numYears = currentYear - 2012 + 1;
   const sheets = spreadsheet.getSheets();
   const dashboard = sheets.shift()
   const sheetNames = sheets.map(sheet => sheet.getSheetName().split(' - '));
@@ -2006,18 +2008,18 @@ function updateAllCustomersSalesData(spreadsheet)
 
   chartData.reverse() 
 
-  for (var s = 3; s < numCustomerSheets; s = s + 2)
+  for (var s = 3; s < numCustomerSheets; s = s + 2) // Loop through all of the customer sheets
   {
     spreadsheet.toast((index + 1) + ': ' + sheetNames[s][0] + ' - ' + sheetNames[s][1], 'Updating...', 60)
     
     allYearsData = years.map((fullYearData, y) => {
-      data = fullYearData.filter(custNum => custNum[0].trim() === sheetNames[s][1])
+      data = fullYearData.filter(custNum => custNum[0].trim() === sheetNames[s][1])  // Retrieve just the customers data
       numItems = data.length;
 
       if (numItems !== 0)
       {
-        chartData[numYears - y - 1][1] = data[numItems - 1][5];
-        salesTotals[index][y] = data[numItems - 1][5]; 
+        chartData[numYears - y - 1][1] = data[numItems - 1][5]; // Fill in the chart data with the yearly totals
+        salesTotals[index][y] = data[numItems - 1][5]; // Fill in the the sales totals for the current customer for year y on the dashboard
         ((currentYear - y) == currentYear) ? 
           data.unshift(['', '', '', '', '01 Jan ' + currentYear, currentDate]) : 
           data.unshift(['', '', '', '', '01 Jan ' + (currentYear - y), '31 Dec ' + (currentYear - y)])
@@ -2052,6 +2054,7 @@ function updateAllCustomersSalesData(spreadsheet)
     sheets[s].getRangeList(yearRange).setFontWeight('bold').setNumberFormat('@') // The year
     sheets[s].getRangeList(totalRange).setBorder(true, false, true, false, false, false).setBackground('#c0c0c0').setFontWeight('bold') // The total quantity and amount
 
+    // Reset the variables
     yearRange.length = 0;
     totalRange.length = 0;
     hAlignments.length = 0;
@@ -2063,6 +2066,7 @@ function updateAllCustomersSalesData(spreadsheet)
   const yearlySales = range.setNumberFormat('$#,##0.00').setValues(salesTotals).activate().offset(-1, 0, 1, numYears).getDisplayValues()[0].reverse();
   const annualSalesData = [];
 
+  // Update the sales data for the annual chart
   if (spreadsheet.getName().split(' ', 1)[0] !== 'CHARTER')
   {
     var charterGuideSalesYearlyData = SpreadsheetApp.openById('1kKS6yazOEtCsH-QCLClUI_6NU47wHfRb8CIs-UTZa1U').getSheetByName('Sales Data').getDataRange().getDisplayValues();
