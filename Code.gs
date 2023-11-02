@@ -570,7 +570,7 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
           .offset(0, 0, lastRow, numCols).setHorizontalAlignments(new Array(lastRow).fill(['left', 'left', 'left', 'left', 'right', 'right'])).setNumberFormat('@').setValues(data)
         newSheet.getRangeList(ranges).setBorder(true, false, true, false, false, false).setBackground('#c0c0c0').setFontWeight('bold')
 
-        const dashboard = spreadsheet.getSheetByName('Dashboard')
+        const dashboard = spreadsheet.getSheetByName('Dashboard').activate()
 
         if (currentYear > Number(dashboard.getRange('E2').getValue())) // The dashboard does not contain the current year
         {
@@ -626,6 +626,7 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
       const dashboard_lastRow = dashboard.getLastRow();
       dashboard.insertColumnBefore(5).getRange(2, 5, 2, 1).setValues([[currentYear], ['=SUM(E4:E' + dashboard_lastRow + ')']])
       const grandTotalRange = dashboard.getRange(4, 4, dashboard_lastRow - 3)
+      dashboard.getRange(1, 5, 1, 2).merge();
       grandTotalRange.setFormulas(grandTotalRange.getFormulas().map(formula => [formula[0].replace('F', 'E')]))
     }
 
@@ -1726,9 +1727,10 @@ function selectDataSheet(spreadsheet, checkboxes)
  * This function updates the sheet links on the dashboard.
  * 
  * @param {Spreadsheet} spreadsheet : The spreadsheet of the links that need to be updated.
+ * @param   {String}        id      : The sheet ID of the annual sales chart.
  * @author Jarren Ralf
  */
-function setSheetLinksOnDashboard(spreadsheet)
+function setSheetLinksOnDashboard(spreadsheet, id)
 {
   const sheets = spreadsheet.getSheets();
   const dashboard = sheets.shift()
@@ -1739,12 +1741,13 @@ function setSheetLinksOnDashboard(spreadsheet)
     for (var s = 3; s < sheetNames.length; s++)
       if (custNum[0] === sheetNames[s][1])
         return [
-          SpreadsheetApp.newRichTextValue().setText(custNum[0]).setLinkUrl('#gid=' + sheets[s    ].getSheetId()).build(),
-          SpreadsheetApp.newRichTextValue().setText(custNum[0]).setLinkUrl('#gid=' + sheets[s + 1].getSheetId()).build() 
+          SpreadsheetApp.newRichTextValue().setText(custNum[0]).setLinkUrl('#gid=' + sheets[s    ].getSheetId()).build(), // Link to Customer data
+          SpreadsheetApp.newRichTextValue().setText(custNum[0]).setLinkUrl('#gid=' + sheets[s + 1].getSheetId()).build()  // Link to Customer chart
         ]
   })
 
-  dashboard.getRange(4, 1, numRows, 2).setRichTextValues(sheetLinks)
+  dashboard.getRange(4, 1, numRows, 2).setRichTextValues(sheetLinks) // Set the sheet links on the dashboard
+    .offset(-3, 4, 1, 1).setRichTextValues([[SpreadsheetApp.newRichTextValue().setText("Sale Totals").setLinkUrl('#gid=' + id).build()]]) // Set the sheet link for the annual sales chart
 }
 
 /**
@@ -1818,13 +1821,11 @@ function updateAllCharts(currentSheet, spreadsheet)
   const startTime = new Date(); // The start time of this function
   const MAX_RUNNING_TIME = 300000; // Five minutes
   const sheets = spreadsheet.getSheets();
-  const dashboard = sheets.shift()
-  const numRows = dashboard.getLastRow() - 3
-  const totalYearlySalesPerCustomer = dashboard.getSheetValues(4, 3, numRows, 2).map(total => [total[0], twoDecimals(total[1])])
   const sheetNames = sheets.map(sheet => sheet.getSheetName().split(' - '));
   const numYears = new Date().getFullYear() - 2011;
-  const numCustomerSheets = sheetNames.length - numYears - 1
-  var customerIndex = 0, chart, currentTime = 0;
+  const numCustomerSheets = sheetNames.length - numYears - 1;
+  const CUST_NAME = 0, SALES_TOTAL = 2;
+  var chart, chartTitleInfo, currentTime = 0;
 
   if (currentSheet === 0) // If the cache was null, set the initial sheet index to 3
     currentSheet = 3;
@@ -1839,6 +1840,7 @@ function updateAllCharts(currentSheet, spreadsheet)
     else
     {
       spreadsheet.deleteSheet(sheets[sheet + 1]) // Delete the chart
+      chartTitleInfo = sheets[sheet].getRange(1, 2, 1, 3).getDisplayValues()[0]
 
       chart = sheets[sheet].newChart()
         .asColumnChart()
@@ -1849,8 +1851,8 @@ function updateAllCharts(currentSheet, spreadsheet)
         .setTransposeRowsAndColumns(false)
         .setMergeStrategy(Charts.ChartMergeStrategy.MERGE_COLUMNS)
         .setHiddenDimensionStrategy(Charts.ChartHiddenDimensionStrategy.IGNORE_BOTH)
-        .setOption('title', totalYearlySalesPerCustomer[customerIndex][0])
-        .setOption('subtitle', 'Total: $' + new Intl.NumberFormat().format(totalYearlySalesPerCustomer[customerIndex][1]))
+        .setOption('title', chartTitleInfo[CUST_NAME])
+        .setOption('subtitle', 'Total: ' + chartTitleInfo[SALES_TOTAL])
         .setOption('isStacked', 'false')
         .setOption('bubble.stroke', '#000000')
         .setOption('textStyle.color', '#000000')
@@ -1867,13 +1869,9 @@ function updateAllCharts(currentSheet, spreadsheet)
         .build();
 
       sheets[sheet].insertChart(chart);
-      spreadsheet.moveChartToObjectSheet(chart).setName(sheetNames[sheet][0] + ' CHART - ' + sheetNames[sheet][1]).getSheetId()
-      customerIndex++;
+      spreadsheet.moveChartToObjectSheet(chart).setName(sheetNames[sheet][0] + ' CHART - ' + sheetNames[sheet][1]).setTabColor('#f1c232')
     }
   }
-
-  if (sheet === numCustomerSheets) // The total number of spreadsheets have been created
-    setSheetLinksOnDashboard(spreadsheet)
 
   const salesDataSheet = spreadsheet.getSheetByName('Sales Data');
   const spreadsheetName = spreadsheet.getName();
@@ -1906,7 +1904,8 @@ function updateAllCharts(currentSheet, spreadsheet)
     .build();
 
   salesDataSheet.insertChart(annualSalesChart);
-  spreadsheet.moveChartToObjectSheet(annualSalesChart).activate().setName('ANNUAL ' + spreadsheetName + ' CHART').setTabColor('#f1c232');
+  const annualSalesChartID = spreadsheet.moveChartToObjectSheet(annualSalesChart).activate().setName('ANNUAL ' + spreadsheetName + ' CHART').setTabColor('#f1c232').getSheetId();
+  setSheetLinksOnDashboard(spreadsheet, annualSalesChartID)
 
   const ss = SpreadsheetApp.openById('1xKw4GAtNbAsTEodCDmCMbPCbXUlK9OHv0rt5gYzqx9c') // The Lodge, Charter, & Guide Data spreadsheet
   const annualSalesDataSheet = ss.getSheetByName('Annual Sales Data');
