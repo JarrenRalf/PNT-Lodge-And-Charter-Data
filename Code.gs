@@ -1532,9 +1532,9 @@ function searchForInvoice(spreadsheet, sheet)
       if (numItems !== 1)
       {
         if (numHighlightedRows > 1)
-          searchResultsDisplayRange.setValue(numHighlightedRows + ' highlighted rows.\n\n' + numItems + ' results found.')
+          searchResultsDisplayRange.setValue(numHighlightedRows + ' results found.\n\n' + numItems + ' total rows.')
         else if (numHighlightedRows === 1)
-          searchResultsDisplayRange.setValue('1 highlighted row.\n\n' + numItems + ' results found.')
+          searchResultsDisplayRange.setValue('1 result found.\n\n' + numItems + ' total rows.')
         else
           searchResultsDisplayRange.setValue(numItems +  'results found.')
       }
