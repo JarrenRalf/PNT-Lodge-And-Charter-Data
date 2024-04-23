@@ -245,8 +245,10 @@ function collectAllHistoricalData()
   const years = new Array(numYears).fill('').map((_, y) => (currentYear - y).toString()).reverse(); // Years in ascending order
   const COL = numYears + 2; // A column index to ensure the correct year is being updated when mapping through each year
   const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString())
+  const itemNum = csvData[0].indexOf('Item #');
+  const fullDescription = csvData[0].indexOf('Item List')
   var quanityData_Lodge = [], quanityData_CharterGuide = [], quanityData_All = [], amountData_Lodge = [], amountData_CharterGuide = [], amountData_All = [];
-  var sheet_lodgeSales, sheet_charterGuideSales, index, index_All, item, year_y, year_index;
+  var sheet_lodgeSales, sheet_charterGuideSales, index, index_All, item, year_y, year_index, cust_name_index = numYears + 3;
 
   // Loop through all of the years
   years.map((year, y) => {
@@ -254,190 +256,198 @@ function collectAllHistoricalData()
     year_index = y + 2; // Reindex to keep the last 2 years of customer names in the data
 
     sheet_lodgeSales = spreadsheet_lodgeSales.getSheetByName(year)
-    sheet_lodgeSales.getSheetValues(2, 2, sheet_lodgeSales.getLastRow() - 1, 5).map(lodge => { // Loop through all of the lodge data for the y-th year
-      if (isNotBlank(lodge[0])) // Spaces between customers
-      {
-        item = csvData.find(sku => lodge[1] == sku[6]) // Find the current item in the adagio csv data
 
-        if (item != undefined && item[10] === 'A') // Item is found and Active
+    if (sheet_lodgeSales !== null)
+    {
+      sheet_lodgeSales.getSheetValues(2, 2, sheet_lodgeSales.getLastRow() - 1, 5).map(lodge => { // Loop through all of the lodge data for the y-th year
+        if (isNotBlank(lodge[0])) // Spaces between customers
         {
-          index = quanityData_Lodge.findIndex(d => d[0] === item[1]);   // The index for the current item in the lodge quantity data
-          index_All = quanityData_All.findIndex(d => d[0] === item[1]); // The index for the current item in the combined quantity data
+          item = csvData.find(sku => lodge[1] == sku[itemNum]) // Find the current item in the adagio csv data
 
-          if (year_index < numYears) // Not last year or the current year either but past years
+          if (item != undefined) // Item is found
           {
-            if (index !== -1) // Current item is already in lodge data list
-            {
-              quanityData_Lodge[index][year_y] += Number(lodge[3]) // Increase the quantity
-               amountData_Lodge[index][year_y] += Number(lodge[4]) // Increase the amount ($)
-            }
-            else // The current item is not in the lodge data yet, so add it in
-            {
-              quanityData_Lodge.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-               amountData_Lodge.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-              quanityData_Lodge[quanityData_Lodge.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
-               amountData_Lodge[amountData_Lodge.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
-            }
+            index = quanityData_Lodge.findIndex(d => d[0] === item[fullDescription]);   // The index for the current item in the lodge quantity data
+            index_All = quanityData_All.findIndex(d => d[0] === item[fullDescription]); // The index for the current item in the combined quantity data
 
-            if (index_All !== -1) // Current item is already in combined data list
+            if (year_index < numYears) // Not last year or the current year either but past years
             {
-              quanityData_All[index_All][year_y] += Number(lodge[3]) // Increase the quantity
-               amountData_All[index_All][year_y] += Number(lodge[4]) // Increase the amount ($)
-            }
-            else // The current item is not in the combined data yet, so add it in
-            {
-              quanityData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-               amountData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-              quanityData_All[quanityData_All.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
-               amountData_All[amountData_All.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
-            }
-          }
-          else // This is the the previous year or current year; We want to identify which customers purchased particular items in these years
-          {
-            if (index !== -1) // Current item is already in lodge data list
-            {
-              if (isNotBlank(quanityData_Lodge[index][15])) // Another lodge customer is added to the list of lodge customers who have purchased this item in the current year
+              if (index !== -1) // Current item is already in lodge data list
               {
-                quanityData_Lodge[index][15] += '\n(' + year + ') ' + lodge[0]
-                 amountData_Lodge[index][15] += '\n(' + year + ') ' + lodge[0]
+                quanityData_Lodge[index][year_y] += Number(lodge[3]) // Increase the quantity
+                amountData_Lodge[index][year_y] += Number(lodge[4]) // Increase the amount ($)
               }
-              else // This is the first lodge customer to purchase this item in the current year
+              else // The current item is not in the lodge data yet, so add it in
               {
-                quanityData_Lodge[index][15] = '(' + year + ') ' + lodge[0]
-                 amountData_Lodge[index][15] = '(' + year + ') ' + lodge[0]
+                quanityData_Lodge.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                amountData_Lodge.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                quanityData_Lodge[quanityData_Lodge.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
+                amountData_Lodge[amountData_Lodge.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
               }
 
-              quanityData_Lodge[index][year_y] += Number(lodge[3]) // Increase the quantity
-               amountData_Lodge[index][year_y] += Number(lodge[4]) // Increase the quantity 
-            }
-            else // The current item is not in the lodge data yet, so add it in
-            {
-              quanityData_Lodge.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
-               amountData_Lodge.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
-              quanityData_Lodge[quanityData_Lodge.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
-               amountData_Lodge[amountData_Lodge.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
-            }
-
-            if (index_All !== -1) // Current item is already in combined data list
-            {
-              if (isNotBlank(quanityData_All[index_All][15])) // Another lodge customer is added to the list of combined customers who have purchased this item in the current year
+              if (index_All !== -1) // Current item is already in combined data list
               {
-                quanityData_All[index_All][15] += '\n(' + year + ') ' + lodge[0]
-                 amountData_All[index_All][15] += '\n(' + year + ') ' + lodge[0]
+                quanityData_All[index_All][year_y] += Number(lodge[3]) // Increase the quantity
+                amountData_All[index_All][year_y] += Number(lodge[4]) // Increase the amount ($)
               }
-              else // This is the first lodge customer to purchase this item in the current year
+              else // The current item is not in the combined data yet, so add it in
               {
-                quanityData_All[index_All][15] = '(' + year + ') ' + lodge[0]
-                 amountData_All[index_All][15] = '(' + year + ') ' + lodge[0]
+                quanityData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                amountData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                quanityData_All[quanityData_All.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
+                amountData_All[amountData_All.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
+              }
+            }
+            else // This is the the previous year or current year; We want to identify which customers purchased particular items in these years
+            {
+              if (index !== -1) // Current item is already in lodge data list
+              {
+                if (isNotBlank(quanityData_Lodge[index][cust_name_index])) // Another lodge customer is added to the list of lodge customers who have purchased this item in the current year
+                {
+                  quanityData_Lodge[index][cust_name_index] += '\n(' + year + ') ' + lodge[0]
+                  amountData_Lodge[index][cust_name_index] += '\n(' + year + ') ' + lodge[0]
+                }
+                else // This is the first lodge customer to purchase this item in the current year
+                {
+                  quanityData_Lodge[index][cust_name_index] = '(' + year + ') ' + lodge[0]
+                  amountData_Lodge[index][cust_name_index] = '(' + year + ') ' + lodge[0]
+                }
+
+                quanityData_Lodge[index][year_y] += Number(lodge[3]) // Increase the quantity
+                amountData_Lodge[index][year_y] += Number(lodge[4]) // Increase the quantity 
+              }
+              else // The current item is not in the lodge data yet, so add it in
+              {
+                quanityData_Lodge.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
+                amountData_Lodge.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
+                quanityData_Lodge[quanityData_Lodge.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
+                amountData_Lodge[amountData_Lodge.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
               }
 
-              quanityData_All[index_All][year_y] += Number(lodge[3]) // Increase the quantity
-               amountData_All[index_All][year_y] += Number(lodge[4]) // Increase the amount ($)
-            }
-            else // The current item is not in the combined data yet, so add it in
-            {
-              quanityData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
-               amountData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
-              quanityData_All[quanityData_All.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
-               amountData_All[amountData_All.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
+              if (index_All !== -1) // Current item is already in combined data list
+              {
+                if (isNotBlank(quanityData_All[index_All][cust_name_index])) // Another lodge customer is added to the list of combined customers who have purchased this item in the current year
+                {
+                  quanityData_All[index_All][cust_name_index] += '\n(' + year + ') ' + lodge[0]
+                  amountData_All[index_All][cust_name_index] += '\n(' + year + ') ' + lodge[0]
+                }
+                else // This is the first lodge customer to purchase this item in the current year
+                {
+                  quanityData_All[index_All][cust_name_index] = '(' + year + ') ' + lodge[0]
+                  amountData_All[index_All][cust_name_index] = '(' + year + ') ' + lodge[0]
+                }
+
+                quanityData_All[index_All][year_y] += Number(lodge[3]) // Increase the quantity
+                amountData_All[index_All][year_y] += Number(lodge[4]) // Increase the amount ($)
+              }
+              else // The current item is not in the combined data yet, so add it in
+              {
+                quanityData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
+                amountData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + lodge[0]])
+                quanityData_All[quanityData_All.length - 1][year_y] = Number(lodge[3]) // Add quantity to the appropriate year (column)
+                amountData_All[amountData_All.length  - 1][year_y] = Number(lodge[4]) // Add amount ($) to the appropriate year (column)
+              }
             }
           }
         }
-      }
-    })
+      })
+    }
 
     sheet_charterGuideSales = spreadsheet_charterGuideSales.getSheetByName(year)
-    sheet_charterGuideSales.getSheetValues(2, 2, sheet_charterGuideSales.getLastRow() - 1, 5).map(charterGuide => { // Loop through all of the charter & guide data for the y-th year
-      if (isNotBlank(charterGuide[0])) // Spaces between customers
-      {
-        item = csvData.find(sku => charterGuide[1] == sku[6]) // Find the current item in the adagio csv data
 
-        if (item != undefined && item[10] === 'A') // Item is found and Active
+    if (sheet_charterGuideSales !== null)
+    {
+      sheet_charterGuideSales.getSheetValues(2, 2, sheet_charterGuideSales.getLastRow() - 1, 5).map(charterGuide => { // Loop through all of the charter & guide data for the y-th year
+        if (isNotBlank(charterGuide[0])) // Spaces between customers
         {
-          index = quanityData_CharterGuide.findIndex(d => d[0] === item[1]); // The index for the current item in the charter & guide quantity data
-          index_All = quanityData_All.findIndex(d => d[0] === item[1]);      // The index for the current item in the combined quantity data
+          item = csvData.find(sku => charterGuide[1] == sku[itemNum]) // Find the current item in the adagio csv data
 
-          if (year_index < numYears) // Not the current year but past years
+          if (item != undefined) // Item is found
           {
-            if (index !== -1) // Current item is already in charter & guide data list
-            {
-              quanityData_CharterGuide[index][year_y] += Number(charterGuide[3]) // Increase the quantity
-               amountData_CharterGuide[index][year_y] += Number(charterGuide[4]) // Increase the amount ($)
-            }
-            else // The current item is not in the charter & guide data yet, so add it in
-            {
-              quanityData_CharterGuide.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-               amountData_CharterGuide.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-              quanityData_CharterGuide[quanityData_CharterGuide.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
-               amountData_CharterGuide[amountData_CharterGuide.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
-            }
+            index = quanityData_CharterGuide.findIndex(d => d[0] === item[fullDescription]); // The index for the current item in the charter & guide quantity data
+            index_All = quanityData_All.findIndex(d => d[0] === item[fullDescription]);      // The index for the current item in the combined quantity data
 
-            if (index_All !== -1) // Current item is already in combined data list
+            if (year_index < numYears) // Not the current year but past years
             {
-              quanityData_All[index_All][year_y] += Number(charterGuide[3]) // Increase the quantity
-               amountData_All[index_All][year_y] += Number(charterGuide[4]) // Increase the amount ($)
-            }
-            else // The current item is not in the combined data yet, so add it in
-            {
-              quanityData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-               amountData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), ''])
-              quanityData_All[quanityData_All.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
-               amountData_All[amountData_All.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
-            }
-          }
-          else // This is the the previous year or current year; We want to identify which customers purchased particular items in these years
-          {
-            if (index !== -1) // Current item is already in charter & guide data list
-            { // Another charter & guide customer is added to the list of charter & guide customers who have purchased this item in the current year
-              if (isNotBlank(quanityData_CharterGuide[index][15])) 
+              if (index !== -1) // Current item is already in charter & guide data list
               {
-                quanityData_CharterGuide[index][15] += '\n(' + year + ') ' + charterGuide[0]
-                 amountData_CharterGuide[index][15] += '\n(' + year + ') ' + charterGuide[0]
+                quanityData_CharterGuide[index][year_y] += Number(charterGuide[3]) // Increase the quantity
+                amountData_CharterGuide[index][year_y] += Number(charterGuide[4]) // Increase the amount ($)
               }
-              else // This is the first charter & guide customer to purchase this item in the current year
+              else // The current item is not in the charter & guide data yet, so add it in
               {
-                quanityData_CharterGuide[index][15] = '(' + year + ') ' + charterGuide[0]
-                 amountData_CharterGuide[index][15] = '(' + year + ') ' + charterGuide[0]
+                quanityData_CharterGuide.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                amountData_CharterGuide.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                quanityData_CharterGuide[quanityData_CharterGuide.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
+                amountData_CharterGuide[amountData_CharterGuide.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
               }
 
-              quanityData_CharterGuide[index][year_y] += Number(charterGuide[3]) // Increase the quantity
-               amountData_CharterGuide[index][year_y] += Number(charterGuide[4]) // Increase the amount ($)
-            }
-            else // The current item is not in the charter & guide data yet, so add it in
-            {
-              quanityData_CharterGuide.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
-               amountData_CharterGuide.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
-              quanityData_CharterGuide[quanityData_CharterGuide.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
-               amountData_CharterGuide[amountData_CharterGuide.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
-            }
-
-            if (index_All !== -1) // Current item is already in combined data list
-            {
-              if (isNotBlank(quanityData_All[index_All][15])) // Another charter & guide customer is added to the list of combined customers who have purchased this item in the current year
+              if (index_All !== -1) // Current item is already in combined data list
               {
-                quanityData_All[index_All][15] += '\n(' + year + ') ' + charterGuide[0]
-                 amountData_All[index_All][15] += '\n(' + year + ') ' + charterGuide[0]
+                quanityData_All[index_All][year_y] += Number(charterGuide[3]) // Increase the quantity
+                amountData_All[index_All][year_y] += Number(charterGuide[4]) // Increase the amount ($)
               }
-              else // This is the first charter & guide customer to purchase this item in the current year
+              else // The current item is not in the combined data yet, so add it in
               {
-                quanityData_All[index_All][15] = '(' + year + ') ' + charterGuide[0]
-                 amountData_All[index_All][15] = '(' + year + ') ' + charterGuide[0]
+                quanityData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                amountData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), ''])
+                quanityData_All[quanityData_All.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
+                amountData_All[amountData_All.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
+              }
+            }
+            else // This is the the previous year or current year; We want to identify which customers purchased particular items in these years
+            {
+              if (index !== -1) // Current item is already in charter & guide data list
+              { // Another charter & guide customer is added to the list of charter & guide customers who have purchased this item in the current year
+                if (isNotBlank(quanityData_CharterGuide[index][cust_name_index])) 
+                {
+                  quanityData_CharterGuide[index][cust_name_index] += '\n(' + year + ') ' + charterGuide[0]
+                  amountData_CharterGuide[index][cust_name_index] += '\n(' + year + ') ' + charterGuide[0]
+                }
+                else // This is the first charter & guide customer to purchase this item in the current year
+                {
+                  quanityData_CharterGuide[index][cust_name_index] = '(' + year + ') ' + charterGuide[0]
+                  amountData_CharterGuide[index][cust_name_index] = '(' + year + ') ' + charterGuide[0]
+                }
+
+                quanityData_CharterGuide[index][year_y] += Number(charterGuide[3]) // Increase the quantity
+                amountData_CharterGuide[index][year_y] += Number(charterGuide[4]) // Increase the amount ($)
+              }
+              else // The current item is not in the charter & guide data yet, so add it in
+              {
+                quanityData_CharterGuide.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
+                amountData_CharterGuide.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
+                quanityData_CharterGuide[quanityData_CharterGuide.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
+                amountData_CharterGuide[amountData_CharterGuide.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
               }
 
-              quanityData_All[index_All][year_y] += Number(charterGuide[3]) // Increase the quantity
-               amountData_All[index_All][year_y] += Number(charterGuide[4]) // Increase the amount ($)
-            }
-            else // The current item is not in the combined data yet, so add it in
-            {
-              quanityData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
-               amountData_All.push([item[1], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
-              quanityData_All[quanityData_All.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
-               amountData_All[amountData_All.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
+              if (index_All !== -1) // Current item is already in combined data list
+              {
+                if (isNotBlank(quanityData_All[index_All][cust_name_index])) // Another charter & guide customer is added to the list of combined customers who have purchased this item in the current year
+                {
+                  quanityData_All[index_All][cust_name_index] += '\n(' + year + ') ' + charterGuide[0]
+                  amountData_All[index_All][cust_name_index] += '\n(' + year + ') ' + charterGuide[0]
+                }
+                else // This is the first charter & guide customer to purchase this item in the current year
+                {
+                  quanityData_All[index_All][cust_name_index] = '(' + year + ') ' + charterGuide[0]
+                  amountData_All[index_All][cust_name_index] = '(' + year + ') ' + charterGuide[0]
+                }
+
+                quanityData_All[index_All][year_y] += Number(charterGuide[3]) // Increase the quantity
+                amountData_All[index_All][year_y] += Number(charterGuide[4]) // Increase the amount ($)
+              }
+              else // The current item is not in the combined data yet, so add it in
+              {
+                quanityData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
+                amountData_All.push([item[fullDescription], 0, 0, ...new Array(numYears).fill(0), '(' + year + ') ' + charterGuide[0]])
+                quanityData_All[quanityData_All.length - 1][year_y] = Number(charterGuide[3]) // Add quantity to the appropriate year (column)
+                amountData_All[amountData_All.length  - 1][year_y] = Number(charterGuide[4]) // Add amount ($) to the appropriate year (column)
+              }
             }
           }
         }
-      }
-    })
+      })
+    }
   })
 
   quanityData_Lodge = quanityData_Lodge.map((item, i) => {
@@ -473,7 +483,7 @@ function collectAllHistoricalData()
       return item
     })
 
-  const header = ['Descriptions', 'AVG (6 yr)', 'AVG - CoV', ...years.reverse(), 'Customers purchased in 2023'];
+  const header = ['Descriptions', 'AVG (6 yr)', 'AVG - CoV', ...years.reverse(), 'Customers who purchased these items in ' + (currentYear - 2) + ' and ' + (currentYear - 1)];
   const numRows_lodgeQty = quanityData_Lodge.unshift(header)
   const numRows_lodgeAmt = amountData_Lodge.unshift(header)
   const numRows_charterGuideQty = quanityData_CharterGuide.unshift(header)
@@ -493,6 +503,12 @@ function collectAllHistoricalData()
   spreadsheet.toast('All Amount / Quantity data for Lodge, Charter, and Guide customers has been updated.', 'COMPLETE', 60)
 }
 
+function test()
+{
+  const numYears = new Date().getFullYear() - 2012 + 1;
+  Logger.log(numYears)
+}
+
 /**
  * This function takes all of the yearly invoice data and concatenates it into one meta set of invoice data. This function can be run on its own or
  * it is Trigger via an import of invoice data.
@@ -507,8 +523,9 @@ function concatenateAllData()
 
   new Array(currentYear - 2012 + 1).fill('').map((_, y) => (currentYear - y).toString()).map(year => {
     sheet = spreadsheet.getSheetByName(year)
-    // Reverse the data so that it is in descending date (as apposed to ascending), so the concatenations between years is seamless i.e. December 2017 is followed by January 2018
-    allData.push(...sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 8).reverse()) 
+
+    if (sheet !== null) // Reverse the data so that it is in descending date (as apposed to ascending), so the concatenations between years is seamless i.e. December 2017 is followed by January 2018
+      allData.push(...sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 8).reverse());
   })
 
   const lastRow = allData.unshift(['Item Description', 'Customer Name', 'Date', 'Invoice #', 'Location', 'Salesperson', 'Quantity', 'Amount']);
@@ -577,7 +594,7 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
           const dashboard_lastRow = dashboard.getLastRow();
           dashboard.insertColumnBefore(5).getRange(2, 5, 2, 1).setValues([[currentYear], ['=SUM(E4:E' + dashboard_lastRow + ')']])
           const grandTotalRange = dashboard.getRange(4, 4, dashboard_lastRow - 3)
-          dashboard.getRange(1, 5, 1, 2).merge();
+          dashboard.getRange(1, 5, 1, dashboard.getLastColumn() - 4).merge();
           grandTotalRange.setFormulas(grandTotalRange.getFormulas().map(formula => [formula[0].replace('F', 'E')]))
         }
 
@@ -627,8 +644,8 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
       const dashboard_lastRow = dashboard.getLastRow();
       dashboard.insertColumnBefore(5).getRange(2, 5, 2, 1).setValues([[currentYear], ['=SUM(E4:E' + dashboard_lastRow + ')']])
       const grandTotalRange = dashboard.getRange(4, 4, dashboard_lastRow - 3)
-      dashboard.getRange(1, 5, 1, 2).merge();
-      grandTotalRange.setFormulas(grandTotalRange.getFormulas().map(formula => [formula[0].replace('F', 'E')]))
+      dashboard.getRange(1, 5, 1, dashboard.getLastColumn() - 4).merge();
+      grandTotalRange.setFormulas(grandTotalRange.getFormulas().map(formula => [formula[0].replace('F', 'E')]));
     }
 
     updateAllCustomersSalesData(spreadsheet)
@@ -884,7 +901,7 @@ function processImportedData(e)
           const sheetName = sheets[sheet].getSheetName()
           const sheetName_Split = sheetName.split(' ')
           const doesPreviousSheetExist = sheetName_Split[1]
-          var fileName = sheetName_Split[0]
+          var fileName = sheetName_Split[0];
 
           if (sheets[sheet].getSheetName().substring(0, 7) !== "Copy Of") // Don't delete the sheets that are duplicates
             spreadsheet.deleteSheet(sheets[sheet]) // Delete the new sheet that was created
@@ -1008,23 +1025,25 @@ function reformatData_YearlyCustomerItemData(preData)
 function reformatData_YearlyInvoiceData(preData)
 {
   const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString())
+  const itemNum = csvData[0].indexOf('Item #');
+  const fullDescription = csvData[0].indexOf('Item List')
   var item;
 
   return preData.map(itemVals => {
-    item = csvData.find(val => val[6] == itemVals[9])
+    item = csvData.find(val => val[itemNum] == itemVals[9])
 
     if (item != null)
       return (itemVals[3].toString().length === 9 && itemVals[3].toString().charAt('I')) ?
-        [item[1], itemVals[1], itemVals[2], itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] :
+        [item[fullDescription], itemVals[1], itemVals[2], itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] :
       (itemVals[3].toString().length === 8 && itemVals[3].toString().charAt('I')) ?
-        [item[1], itemVals[1], itemVals[2], '0' + itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
-        [item[1], itemVals[1], itemVals[2], itemVals[3], itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]]
+        [item[fullDescription], itemVals[1], itemVals[2], '0' + itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
+        [item[fullDescription], itemVals[1], itemVals[2], itemVals[3], itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]]
     else
       return (itemVals[3].toString().length === 9 && itemVals[3].toString().charAt('I')) ? 
-        [itemVals[9] + ' - ' + itemVals[0] + ' - - -', itemVals[1], itemVals[2], itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
+        [itemVals[0] + ' - - - - ' + itemVals[9], itemVals[1], itemVals[2], itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
       (itemVals[3].toString().length === 8 && itemVals[3].toString().charAt('I')) ? 
-        [itemVals[9] + ' - ' + itemVals[0] + ' - - -', itemVals[1], itemVals[2], '0' + itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
-        [itemVals[9] + ' - ' + itemVals[0] + ' - - -', itemVals[1], itemVals[2], itemVals[3], itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]]
+        [itemVals[0] + ' - - - - ' + itemVals[9], itemVals[1], itemVals[2], '0' + itemVals[3].substring(1), itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]] : 
+        [itemVals[0] + ' - - - - ' + itemVals[9], itemVals[1], itemVals[2], itemVals[3], itemVals[4], itemVals[5], itemVals[6], itemVals[7], itemVals[8], itemVals[9]]
   })
 }
 
@@ -1037,7 +1056,7 @@ function reformatData_YearlyInvoiceData(preData)
  */
 function removeNonImformativeSKUs(data)
 {
-  const fishingTackleSKUs = ["80000129", "80000389", "80000549", "80000349", "80000399", "80000499", "80000799", "80000409", "80000439", "80000599", "80000199", "80000249", "80000459", "80000699", "80000739", "80000999", "80001099", "80001149", "80001249", "80001499", "80001949", "80001999", "80000039", "80000089", "80000829", "80000259", "80000589", "80000899", "80000299", "80001199", "80001599", "80000649", "80000849", "80000025", "80000169", "80000579", "80000939", "80001299", "80000139", "80000329", "80000519", "80000629", "80000769", "80000015", "80000149", "80001549", "80000049", "80000949", "80001899", "80000020", "80000079", "80000179", "80000989", "80000449", "80000429", "80000099", "80001699", "80001649", "80001799", "80001849", "80000029", "80000339", "80000749", "80001399", "80000189", "80000289", "80000689", "80000069", "80000279", "80000159", "80000859", "80000729", "80000979", "80000059", "80000229", "80000119", "80000209", "80000219", "80000319", "80000359", "80000369", "80000419", "80000529", "80000639", "80000889", "80001749", "80000789", "80000609", "80000509", "80001049", "80000539", "80000659", "80001449", "80000109", "80000489", "80000759", "80000669", "80000469", "80000379", "80000869", "80000479", "80000679", "80000239", "80000719", "80000569", "80000709", "80000309", "80000919", "80001349", "80000879", "80000929", "80000269", "80000819", "80000619", "80000839", "80000959", "7000F6000", "7000F10000", "80002999", "7000F4000", "7000F5000", "7000F7000", "7000F3000", "7000F8000", "7000F20000", "7000F30000", "7000F9000", "80000779", "80000559", '7000M10000', '7000M200000', '7000M100000', '7000M125000', '7000M15000', '7000M150000', '7000M20000', '7000M3000', '7000M30000', '7000M4000', '7000M5000', '7000M50000', '7000M6000', '7000M7000', '7000M75000', '7000M8000', '7000M9000', 'FREIGHT', 'MISCITEM', 'MISCWEB', 'GIFT CERTIFICATE', 'BROKERAGE', 'ROPE SPLICE', '54002800', '54003600', '20110000', '7000C24999', '20120000']
+  const fishingTackleSKUs = ["80000129", "80000389", "80000549", "80000349", "80000399", "80000499", "80000799", "80000409", "80000439", "80000599", "80000199", "80000249", "80000459", "80000699", "80000739", "80000999", "80001099", "80001149", "80001249", "80001499", "80001949", "80001999", "80000039", "80000089", "80000829", "80000259", "80000589", "80000899", "80000299", "80001199", "80001599", "80000649", "80000849", "80000025", "80000169", "80000579", "80000939", "80001299", "80000139", "80000329", "80000519", "80000629", "80000769", "80000015", "80000149", "80001549", "80000049", "80000949", "80001899", "80000020", "80000079", "80000179", "80000989", "80000449", "80000429", "80000099", "80001699", "80001649", "80001799", "80001849", "80000029", "80000339", "80000749", "80001399", "80000189", "80000289", "80000689", "80000069", "80000279", "80000159", "80000859", "80000729", "80000979", "80000059", "80000229", "80000119", "80000209", "80000219", "80000319", "80000359", "80000369", "80000419", "80000529", "80000639", "80000889", "80001749", "80000789", "80000609", "80000509", "80001049", "80000539", "80000659", "80001449", "80000109", "80000489", "80000759", "80000669", "80000469", "80000379", "80000869", "80000479", "80000679", "80000239", "80000719", "80000569", "80000709", "80000309", "80000919", "80001349", "80000879", "80000929", "80000269", "80000819", "80000619", "80000839", "80000959", "7000F6000", "7000F10000", "80002999", "7000F4000", "7000F5000", "7000F7000", "7000F3000", "7000F8000", "7000F20000", "7000F30000", "7000F9000", "80000779", "80000559", '7000M10000', '7000M200000', '7000M100000', '7000M125000', '7000M15000', '7000M150000', '7000M20000', '7000M3000', '7000M30000', '7000M4000', '7000M5000', '7000M50000', '7000M6000', '7000M7000', '7000M75000', '7000M8000', '7000M9000', 'FREIGHT', 'MISCITEM', 'MISCWEB', 'GIFT CERTIFICATE', 'BROKERAGE', 'ROPE SPLICE', '54002800', '54003600', '20110000', '7000C24999', '20120000', '90070020', '90070021', '90070022', '90070014', '7000C11999', '7000C19999', '90070011', '15000900', '90070010', '90070012', '25821000', '90070030']
 
   return data.filter(v => !fishingTackleSKUs.includes(v[9].toString()))
 }
@@ -1711,7 +1730,7 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
   const searchResultsDisplayRange = sheet.getRange(1, 12); // The range that will display the number of items found by the search
   const functionRunTimeRange = sheet.getRange(2, 12);      // The range that will display the runtimes for the search and formatting
   const itemSearchFullRange = sheet.getRange(6, 1, sheet.getMaxRows() - 5, 16); // The entire range of the Item Search page
-  const checkboxes = sheet.getSheetValues(2, 5, 2, 7);
+  const checkboxes = sheet.getSheetValues(2, 6, 2, 7);
   const output = [];
   const searchesOrNot = sheet.getRange(1, 1, 3).clearFormat()                                       // Clear the formatting of the range of the search box
     .setBorder(true, true, true, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK) // Set the border
@@ -1828,7 +1847,8 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
     }
     else
     {
-      var numFormats = (checkboxes[0][0]) ? new Array(numItems).fill(['@', ...new Array(14).fill('$#,##0.00'), '@']) : new Array(numItems).fill([...new Array(16).fill('@')]);
+      var numCols = output[0].length
+      var numFormats = (checkboxes[0][0]) ? new Array(numItems).fill(['@', ...new Array(numCols - 2).fill('$#,##0.00'), '@']) : new Array(numItems).fill([...new Array(numCols).fill('@')]);
       sheet.getRange('A6').activate(); // Move the user to the top of the search items
       itemSearchFullRange.clearContent().setBackground('white'); // Clear content and reset the text format
       sheet.getRange(6, 1, numItems, output[0].length).setNumberFormats(numFormats).setValues(output);
@@ -2153,12 +2173,13 @@ function updateAllCustomersSalesData(spreadsheet)
   const chartDataH_Alignment = new Array(numYears).fill().map(() => ['center', 'right']);
   var sheet, data, numItems = 0, chartData = [], index = 0, allYearsData, salesData, hAlignments = [], numberFormats = [], 
     yearRange = [], yearRange_RowNum = 3, totalRange = [], totalRange_RowNum = 1;
-
+  
   const years = new Array(numYears).fill('').map((_, y) => (currentYear - y).toString()).map(year_y => {
     chartData.push([year_y, ''])
     sheet = spreadsheet.getSheetByName(year_y)
-    return sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 6)
-  })
+
+    return (sheet !== null) ? sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 6) : sheet;
+  }).filter(u => u !== null)
 
   chartData.reverse() 
 
