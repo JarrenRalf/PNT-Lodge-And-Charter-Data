@@ -37,28 +37,28 @@ function installedOnEdit(e)
   {
     conditional: if (isSingleColumn)
     {
-      if (row == 1 && col == 1 && (rowEnd == 16 || rowEnd == 1))
+      if (row == 1 && col == 1 && (rowEnd == 17 || rowEnd == 1))
         searchForQuantityOrAmount(spreadsheet, sheet)
       else if (isSingleRow)
       {
-        if (row == 2 && col == 5) // Amount ($) Data
-          sheet.getRange(2, 9).uncheck()
-        else if (row == 2 && col == 9) // Quantity Data
-          sheet.getRange(2, 5).uncheck()
-        else if (row == 3 && col == 5) // Lodge Data
+        if (row == 2 && col == 6) // Amount ($) Data
+          sheet.getRange(2, 10).uncheck()
+        else if (row == 2 && col == 10) // Quantity Data
+          sheet.getRange(2, 6).uncheck()
+        else if (row == 3 && col == 6) // Lodge Data
         {
-          sheet.getRange(3,  9).uncheck()
-          sheet.getRange(3, 11).uncheck()
+          sheet.getRange(3, 10).uncheck()
+          sheet.getRange(3, 12).uncheck()
         }
-        else if (row == 3 && col == 9) // Charter & Guide Data
+        else if (row == 3 && col == 10) // Charter & Guide Data
         {
-          sheet.getRange(3,  5).uncheck()
-          sheet.getRange(3, 11).uncheck()
+          sheet.getRange(3,  6).uncheck()
+          sheet.getRange(3, 12).uncheck()
         }
-        else if (row == 3 && col == 11) // Both Data sets
+        else if (row == 3 && col == 12) // Both Data sets
         {
-          sheet.getRange(3, 5).uncheck()
-          sheet.getRange(3, 9).uncheck()
+          sheet.getRange(3,  6).uncheck()
+          sheet.getRange(3, 10).uncheck()
         }
         else
           break conditional;
@@ -1727,9 +1727,9 @@ function searchForInvoice(spreadsheet, sheet)
 function searchForQuantityOrAmount(spreadsheet, sheet)
 {
   const startTime = new Date().getTime();
-  const searchResultsDisplayRange = sheet.getRange(1, 12); // The range that will display the number of items found by the search
-  const functionRunTimeRange = sheet.getRange(2, 12);      // The range that will display the runtimes for the search and formatting
-  const itemSearchFullRange = sheet.getRange(6, 1, sheet.getMaxRows() - 5, 16); // The entire range of the Item Search page
+  const searchResultsDisplayRange = sheet.getRange(1, 13); // The range that will display the number of items found by the search
+  const functionRunTimeRange = sheet.getRange(2, 13);      // The range that will display the runtimes for the search and formatting
+  const itemSearchFullRange = sheet.getRange(6, 1, sheet.getMaxRows() - 5, 17); // The entire range of the Item Search page
   const checkboxes = sheet.getSheetValues(2, 6, 2, 7);
   const output = [];
   const searchesOrNot = sheet.getRange(1, 1, 3).clearFormat()                                       // Clear the formatting of the range of the search box
@@ -1797,7 +1797,7 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
       var dontIncludeTheseWords = searchesOrNot[1].split(/\s+/);
 
       const dataSheet = selectDataSheet(spreadsheet, checkboxes);
-      const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, 16);
+      const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn());
       const numSearches = searches.length; // The number searches
       var numSearchWords;
 
