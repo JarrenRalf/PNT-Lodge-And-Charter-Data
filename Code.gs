@@ -503,12 +503,6 @@ function collectAllHistoricalData()
   spreadsheet.toast('All Amount / Quantity data for Lodge, Charter, and Guide customers has been updated.', 'COMPLETE', 60)
 }
 
-function test()
-{
-  const numYears = new Date().getFullYear() - 2012 + 1;
-  Logger.log(numYears)
-}
-
 /**
  * This function takes all of the yearly invoice data and concatenates it into one meta set of invoice data. This function can be run on its own or
  * it is Trigger via an import of invoice data.
@@ -2181,7 +2175,7 @@ function updateAllCustomersSalesData(spreadsheet)
     return (sheet !== null) ? sheet.getSheetValues(2, 1, sheet.getLastRow() - 1, 6) : sheet;
   }).filter(u => u !== null)
 
-  chartData.reverse() 
+  chartData.reverse();
 
   for (var s = 3; s < numCustomerSheets; s = s + 2) // Loop through all of the customer sheets
   {
