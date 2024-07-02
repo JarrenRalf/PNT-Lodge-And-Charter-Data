@@ -610,7 +610,9 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
   {
     const numCols = 6;
     const sheets = spreadsheet.getSheets();
+    Logger.log(year)
     const previousSheet = sheets.find(sheet => sheet.getSheetName() == year)
+    Logger.log(previousSheet.getSheetName())
     var indexAdjustment = 2011
 
     if (doesPreviousSheetExist)
