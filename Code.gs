@@ -452,33 +452,33 @@ function collectAllHistoricalData()
 
   quanityData_Lodge = quanityData_Lodge.map((item, i) => {
       item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
-      item[2] = Math.round((item[3] + item[6] + item[7] + item[8])*5/2)/10; // Average - Covid
+      item[2] = Math.round((item[3] + item[4] + item[5] + item[8])*5/2)/10; // Average - Covid
       item = item.map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros, '0', and replace them with a blank string (makes the data present cleaner)
       amountData_Lodge[i][1] = 
         Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][4] + amountData_Lodge[i][5] + amountData_Lodge[i][6] + amountData_Lodge[i][7] + amountData_Lodge[i][8])*50/3)/100; // Average
-      amountData_Lodge[i][2] =  Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][6] + amountData_Lodge[i][7] + amountData_Lodge[i][8])*25)/100; // Average - Covid
+      amountData_Lodge[i][2] =  Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][4] + amountData_Lodge[i][5] + amountData_Lodge[i][8])*25)/100; // Average - Covid
       amountData_Lodge[i] = amountData_Lodge[i].map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros
       return item
     })
 
   quanityData_CharterGuide = quanityData_CharterGuide.map((item, i) => {
       item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
-      item[2] = Math.round((item[3] + item[6] + item[7] + item[8])*5/2)/10; // Average - Covid
+      item[2] = Math.round((item[3] + item[4] + item[5] + item[8])*5/2)/10; // Average - Covid
       item = item.map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros, '0', and replace them with a blank string (makes the data present cleaner)
       amountData_CharterGuide[i][1] = 
         Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][4] + amountData_CharterGuide[i][5] + amountData_CharterGuide[i][6] + amountData_CharterGuide[i][7] + amountData_CharterGuide[i][8])*50/3)/100; // Average
-      amountData_CharterGuide[i][2] =  Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][6] + amountData_CharterGuide[i][7] + amountData_CharterGuide[i][8])*25)/100; // Average - Covid
+      amountData_CharterGuide[i][2] =  Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][4] + amountData_CharterGuide[i][5] + amountData_CharterGuide[i][8])*25)/100; // Average - Covid
       amountData_CharterGuide[i] = amountData_CharterGuide[i].map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros
       return item
     })
 
   quanityData_All = quanityData_All.map((item, i) => {
       item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
-      item[2] = Math.round((item[3] + item[6] + item[7] + item[8])*5/2)/10; // Average - Covid
+      item[2] = Math.round((item[3] + item[4] + item[5] + item[8])*5/2)/10; // Average - Covid
       item = item.map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros, '0', and replace them with a blank string (makes the data present cleaner)
       amountData_All[i][1] = 
         Math.round((amountData_All[i][3] + amountData_All[i][4] + amountData_All[i][5] + amountData_All[i][6] + amountData_All[i][7] + amountData_All[i][8])*50/3)/100; // Average
-      amountData_All[i][2] =  Math.round((amountData_All[i][3] + amountData_All[i][6] + amountData_All[i][7] + amountData_All[i][8])*25)/100; // Average - Covid
+      amountData_All[i][2] =  Math.round((amountData_All[i][3] + amountData_All[i][4] + amountData_All[i][5] + amountData_All[i][8])*25)/100; // Average - Covid
       amountData_All[i] = amountData_All[i].map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros
       return item
     })
@@ -1052,7 +1052,7 @@ function reformatData_YearlyInvoiceData(preData)
  */
 function removeNonImformativeSKUs(data)
 {
-  const fishingTackleSKUs = ["80000129", "80000389", "80000549", "80000349", "80000399", "80000499", "80000799", "80000409", "80000439", "80000599", "80000199", "80000249", "80000459", "80000699", "80000739", "80000999", "80001099", "80001149", "80001249", "80001499", "80001949", "80001999", "80000039", "80000089", "80000829", "80000259", "80000589", "80000899", "80000299", "80001199", "80001599", "80000649", "80000849", "80000025", "80000169", "80000579", "80000939", "80001299", "80000139", "80000329", "80000519", "80000629", "80000769", "80000015", "80000149", "80001549", "80000049", "80000949", "80001899", "80000020", "80000079", "80000179", "80000989", "80000449", "80000429", "80000099", "80001699", "80001649", "80001799", "80001849", "80000029", "80000339", "80000749", "80001399", "80000189", "80000289", "80000689", "80000069", "80000279", "80000159", "80000859", "80000729", "80000979", "80000059", "80000229", "80000119", "80000209", "80000219", "80000319", "80000359", "80000369", "80000419", "80000529", "80000639", "80000889", "80001749", "80000789", "80000609", "80000509", "80001049", "80000539", "80000659", "80001449", "80000109", "80000489", "80000759", "80000669", "80000469", "80000379", "80000869", "80000479", "80000679", "80000239", "80000719", "80000569", "80000709", "80000309", "80000919", "80001349", "80000879", "80000929", "80000269", "80000819", "80000619", "80000839", "80000959", "7000F6000", "7000F10000", "80002999", "7000F4000", "7000F5000", "7000F7000", "7000F3000", "7000F8000", "7000F20000", "7000F30000", "7000F9000", "80000779", "80000559", '7000M10000', '7000M200000', '7000M100000', '7000M125000', '7000M15000', '7000M150000', '7000M20000', '7000M3000', '7000M30000', '7000M4000', '7000M5000', '7000M50000', '7000M6000', '7000M7000', '7000M75000', '7000M8000', '7000M9000', 'FREIGHT', 'MISCITEM', 'MISCWEB', 'GIFT CERTIFICATE', 'BROKERAGE', 'ROPE SPLICE', '54002800', '54003600', '20110000', '7000C24999', '20120000', '90070020', '90070021', '90070022', '90070014', '7000C11999', '7000C19999', '90070011', '15000900', '90070010', '90070012', '25821000', '90070030']
+  const fishingTackleSKUs = ["80000129", "80000389", "80000549", "80000349", "80000399", "80000499", "80000799", "80000409", "80000439", "80000599", "80000199", "80000249", "80000459", "80000699", "80000739", "80000999", "80001099", "80001149", "80001249", "80001499", "80001949", "80001999", "80000039", "80000089", "80000829", "80000259", "80000589", "80000899", "80000299", "80001199", "80001599", "80000649", "80000849", "80000025", "80000169", "80000579", "80000939", "80001299", "80000139", "80000329", "80000519", "80000629", "80000769", "80000015", "80000149", "80001549", "80000049", "80000949", "80001899", "80000020", "80000079", "80000179", "80000989", "80000449", "80000429", "80000099", "80001699", "80001649", "80001799", "80001849", "80000029", "80000339", "80000749", "80001399", "80000189", "80000289", "80000689", "80000069", "80000279", "80000159", "80000859", "80000729", "80000979", "80000059", "80000229", "80000119", "80000209", "80000219", "80000319", "80000359", "80000369", "80000419", "80000529", "80000639", "80000889", "80001749", "80000789", "80000609", "80000509", "80001049", "80000539", "80000659", "80001449", "80000109", "80000489", "80000759", "80000669", "80000469", "80000379", "80000869", "80000479", "80000679", "80000239", "80000719", "80000569", "80000709", "80000309", "80000919", "80001349", "80000879", "80000929", "80000269", "80000819", "80000619", "80000839", "80000959", "7000F6000", "7000F10000", "80002999", "7000F4000", "7000F5000", "7000F7000", "7000F3000", "7000F8000", "7000F20000", "7000F30000", "7000F9000", "80000779", "80000559", '7000M10000', '7000M200000', '7000M100000', '7000M125000', '7000M15000', '7000M150000', '7000M20000', '7000M3000', '7000M30000', '7000M4000', '7000M5000', '7000M50000', '7000M6000', '7000M7000', '7000M75000', '7000M8000', '7000M9000', 'FREIGHT', 'MISCITEM', 'MISCWEB', 'GIFT CERTIFICATE', 'BROKERAGE', 'ROPE SPLICE', '54002800', '54003600', '20110000', '7000C24999', '20120000', '90070020', '90070021', '90070022', '90070014', '7000C11999', '7000C19999', '90070011', '15000900', '90070010', '90070012', '25821000', '90070030', '20000013', '20000010']
 
   return data.filter(v => !fishingTackleSKUs.includes(v[9].toString()))
 }
@@ -2161,7 +2161,7 @@ function updateAllCustomersSalesData(spreadsheet)
   const sheets = spreadsheet.getSheets();
   const dashboard = sheets.shift()
   const sheetNames = sheets.map(sheet => sheet.getSheetName().split(' - '));
-  const numCustomerSheets = sheetNames.length - numYears - 1
+  const numCustomerSheets = sheetNames.length - numYears - 1;
   const range = dashboard.getRange(4, 5, dashboard.getLastRow() - 3, dashboard.getLastColumn() - 4)
   const salesTotals = range.getValues();
   const hAligns = ['left', 'left', 'right', 'right'], numFormats = ['@', '@', '@', '$#,##0.00']
@@ -2181,6 +2181,8 @@ function updateAllCustomersSalesData(spreadsheet)
 
   for (var s = 3; s < numCustomerSheets; s = s + 2) // Loop through all of the customer sheets
   {
+    Logger.log('-------------------------------------------------------------')
+    Logger.log(s + (index + 1) + ': ' + sheetNames[s][0] + ' - ' + sheetNames[s][1]);
     spreadsheet.toast((index + 1) + ': ' + sheetNames[s][0] + ' - ' + sheetNames[s][1], 'Updating...', 60)
     
     allYearsData = years.map((fullYearData, y) => {
@@ -2202,7 +2204,28 @@ function updateAllCustomersSalesData(spreadsheet)
       }
       else
       {
-        chartData[numYears - y - 1][1] = ''
+        if (chartData[numYears - y - 1] == null)
+        {
+          Logger.log('chartData: ' + chartData);
+          Logger.log('chartData.length: ' + chartData.length);
+          Logger.log('numYears - y - 1: ' + (numYears - y - 1));
+        }
+
+        if (salesTotals[index] == null)
+        {
+          Logger.log('salesTotals: ' + salesTotals);
+          Logger.log('salesTotals.length: ' + salesTotals.length);
+          Logger.log('index: ' + (index));
+        }
+
+        if (salesTotals[index][y] == null)
+        {
+          Logger.log('salesTotals: ' + salesTotals);
+          Logger.log('salesTotals.length: ' + salesTotals.length);
+          Logger.log('y: ' + (y));
+        }
+        
+        chartData[numYears - y - 1][1] = '';
         salesTotals[index][y] = ''; 
       }
 
