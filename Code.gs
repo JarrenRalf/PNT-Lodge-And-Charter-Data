@@ -497,7 +497,7 @@ function collectAllHistoricalData()
   spreadsheet.getSheetByName('Charter & Guide Amount Data').clear().getRange(1, 1, numRows_charterGuideAmt, amountData_CharterGuide[0].length).setValues(amountData_CharterGuide)
   spreadsheet.getSheetByName('Quantity Data').clear().getRange(1, 1, numRows_AllQty, quanityData_All[0].length).setValues(quanityData_All)
   spreadsheet.getSheetByName('Amount Data').clear().getRange(1, 1, numRows_AllAmt, amountData_All[0].length).setValues(amountData_All)
-  spreadsheet.getSheetByName('Search for Item Quantity or Amount ($)').getRange(1, 16, 4)
+  spreadsheet.getSheetByName('Search for Item Quantity or Amount ($)').getRange(1, 17, 4)
     .setValues([['Data was last updated on:\n\n' + new Date().toDateString()],[''],[''],
                 ['Customers who purchased these items in ' + (currentYear - 1).toString() + ' and ' + currentYear.toString()]])
   spreadsheet.toast('All Amount / Quantity data for Lodge, Charter, and Guide customers has been updated.', 'COMPLETE', 60)
@@ -527,7 +527,7 @@ function concatenateAllData()
 }
 
 /**
- * This function configures the yearly customer item data into the format that is desired for the spreadsheet to function optimally
+ * This function configures the yearly customer item data into the format that is desired for the spreadsheet to function optimally.
  * 
  * @param {Object[][]}      values         : The values of the data that were just imported into the spreadsheet
  * @param {String}         fileName        : The name of the new sheet (which will also happen to be the xlxs file name)
@@ -1727,7 +1727,7 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
   const functionRunTimeRange = sheet.getRange(2, 13);      // The range that will display the runtimes for the search and formatting
   const itemSearchFullRange = sheet.getRange(6, 1, sheet.getMaxRows() - 5, 17); // The entire range of the Item Search page
   const checkboxes = sheet.getSheetValues(2, 6, 2, 7);
-  const output = [];
+  var output = [];
   const searchesOrNot = sheet.getRange(1, 1, 3).clearFormat()                                       // Clear the formatting of the range of the search box
     .setBorder(true, true, true, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK) // Set the border
     .setFontFamily("Arial").setFontColor("black").setFontWeight("bold").setFontSize(14)             // Set the various font parameters
@@ -1745,13 +1745,11 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
     if (searchesOrNot.length === 1) // The word 'not' WASN'T found in the string
     {
       const dataSheet = selectDataSheet(spreadsheet, checkboxes);
-      const numCols = dataSheet.getLastColumn()
-      const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, numCols);
-      const numSearches = searches.length; // The number searches
-      var numSearchWords;
 
       if (searches[0][0] === 'RECENT') // If the user's search begins with 'RECENT' then they are searching for information in the final column of data, which is the one that contains customer info
       {
+        const numCols = dataSheet.getLastColumn()
+        const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, numCols);
         const lastColIndex = numCols - 1;
 
         if (searches[0].length !== 1) // Also contains a search phrase
@@ -1763,8 +1761,79 @@ function searchForQuantityOrAmount(spreadsheet, sheet)
         else // Return the last two years of data
           output.push(...data.filter(customer => isNotBlank(customer[lastColIndex])))
       }
+      else if (searches[0][0] === 'TOP' && /^\d+$/.test(searches[0][1]))
+      {
+        if (searches[0].length !== 2 && searches[0][2] === 'IN' && /^\d+$/.test(searches[0][3]))
+        {
+          const currentYear = new Date().getFullYear();
+          var y;
+
+          switch (searches[0][3].toString())
+          {
+            case currentYear.toString():
+              y = 3;
+              break;
+            case (currentYear - 1).toString():
+              y = 4;
+              break;
+            case (currentYear - 2).toString():
+              y = 5;
+              break;
+            case (currentYear - 3).toString():
+              y = 6;
+              break;
+            case (currentYear - 4).toString():
+              y = 7;
+              break;
+            case (currentYear - 5).toString():
+              y = 8;
+              break;
+            case (currentYear - 6).toString():
+              y = 9;
+              break;
+            case (currentYear - 7).toString():
+              y = 10;
+              break;
+            case (currentYear - 8).toString():
+              y = 11;
+              break;
+            case (currentYear - 9).toString():
+              y = 12;
+              break;
+            case (currentYear - 10).toString():
+              y = 13;
+              break;
+            case (currentYear - 11).toString():
+              y = 14;
+              break;
+            case (currentYear - 12).toString():
+              y = 15;
+              break;
+            case (currentYear - 13).toString():
+              y = 16;
+              break;
+            case (currentYear - 14).toString():
+              y = 17;
+              break;
+            case (currentYear - 15).toString():
+              y = 18;
+              break;
+          }
+
+          output = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).sort((a, b) => b[y] - a[y]);
+        }
+        else
+          output = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).sort((a, b) => b[3] - a[3]);
+
+        output.splice(searches[0][1]);
+      }
       else
       {
+        const numCols = dataSheet.getLastColumn()
+        const data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, numCols);
+        const numSearches = searches.length; // The number searches
+        var numSearchWords;
+
         for (var i = 0; i < data.length; i++) // Loop through all of the descriptions from the search data
         {
           loop: for (var j = 0; j < numSearches; j++) // Loop through the number of searches
