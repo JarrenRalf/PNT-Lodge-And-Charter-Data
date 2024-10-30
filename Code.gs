@@ -1076,7 +1076,7 @@ function searchForInvoice(e, spreadsheet, sheet)
 
     if (isNotBlank(searches[0][0])) // If the value in the search box is NOT blank, then compute the search
     {
-      spreadsheet.toast('Searching...', '', 30)
+      spreadsheet.toast('Searching...', '', -1)
 
       if (searchforItems_FilterByCustomer.length === 1) // The word 'by' WASN'T found in the string
       {
@@ -2101,8 +2101,6 @@ function searchForInvoice(e, spreadsheet, sheet)
         else
           sheet.getRange(1, 6).setValue('1 result found.')
       }
-
-      spreadsheet.toast('Searching Complete.')
     }
     else
     {
@@ -2112,6 +2110,7 @@ function searchForInvoice(e, spreadsheet, sheet)
       sheet.getRange(1, 6).setRichTextValue(message);
     }
 
+    spreadsheet.toast('Searching Complete.')
     sheet.getRange(2, 6).setValue((new Date().getTime() - startTime)/1000 + " seconds");
   }
 }
@@ -2191,7 +2190,7 @@ function searchForQuantityOrAmount(e, spreadsheet, sheet)
 
         if (isNotBlank(searches[0][0])) // If the value in the search box is NOT blank, then compute the search
         {
-          spreadsheet.toast('Searching...')
+          spreadsheet.toast('Searching...', '', -1)
 
           if (searchesOrNot.length === 1) // The word 'not' WASN'T found in the string
           {
@@ -2316,8 +2315,6 @@ function searchForQuantityOrAmount(e, spreadsheet, sheet)
             sheet.getRange(6, 1, numItems, numCols_SearchSheet).setNumberFormats(numFormats).setHorizontalAlignments(horizontalAlignments).setValues(output);
             (numItems !== 1) ? sheet.getRange(1, numYears).setValue(numItems + " results found.") : sheet.getRange(1, numYears).setValue("1 result found.");
           }
-
-          spreadsheet.toast('Searching Complete.')
         }
         else
         {
@@ -2327,6 +2324,7 @@ function searchForQuantityOrAmount(e, spreadsheet, sheet)
           sheet.getRange(1, numYears).setRichTextValue(message);
         }
 
+        spreadsheet.toast('Searching Complete.')
         sheet.getRange(2, numYears).setValue((new Date().getTime() - startTime)/1000 + " seconds");
       }
     }
