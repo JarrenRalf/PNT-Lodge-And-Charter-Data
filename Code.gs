@@ -468,7 +468,7 @@ function collectAllHistoricalData()
   spreadsheet.getSheetByName('Charter & Guide Amount Data').clear().getRange(1, 1, numRows_charterGuideAmt, amountData_CharterGuide[0].length).setValues(amountData_CharterGuide)
   spreadsheet.getSheetByName('Quantity Data').clear().getRange(1, 1, numRows_AllQty, quanityData_All[0].length).setValues(quanityData_All)
   spreadsheet.getSheetByName('Amount Data').clear().getRange(1, 1, numRows_AllAmt, amountData_All[0].length).setValues(amountData_All)
-  spreadsheet.getSheetByName('Search for Item Quantity or Amount ($)').getRange(1, 17, 4)
+  spreadsheet.getSheetByName('Search for Item Quantity or Amount ($)').getRange(1, numYears + 4, 4)
     .setValues([['Data was last updated on:\n\n' + new Date().toDateString()],[''],[''],
                 ['Customers who purchased these items in ' + (currentYear - 1).toString() + ' and ' + currentYear.toString()]])
   spreadsheet.toast('All Amount / Quantity data for Lodge, Charter, and Guide customers has been updated.', 'COMPLETE', 60)
