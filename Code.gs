@@ -94,9 +94,10 @@ function addNewCustomer(spreadsheet)
 
       if (response3.getSelectedButton() === ui.Button.OK)
       {
-        const customerNumber = response1.getResponseText().toUpperCase()
-          const customerName = response2.getResponseText().toUpperCase()
-             const sheetName = response3.getResponseText().toUpperCase() + ' - ' + customerNumber
+        const    customerNumber = response1.getResponseText().toUpperCase()
+        const      customerName = response2.getResponseText().toUpperCase()
+        const         sheetName = response3.getResponseText().toUpperCase() + ' - ' + customerNumber
+        const properTypesetName = toProper(response3.getResponseText())
 
         if (isNotBlank(customerNumber) && isNotBlank(customerName) && isNotBlank(sheetName))
         {
@@ -423,33 +424,33 @@ function collectAllHistoricalData()
 
   quanityData_Lodge = quanityData_Lodge.map((item, i) => {
       item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
-      item[2] = Math.round((item[3] + item[4] + item[5] + item[8])*5/2)/10; // Average - Covid
+      item[2] = Math.round((item[3] + item[4] + item[5] + item[6])*5/2)/10; // Average - Covid
       item = item.map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros, '0', and replace them with a blank string (makes the data present cleaner)
       amountData_Lodge[i][1] = 
         Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][4] + amountData_Lodge[i][5] + amountData_Lodge[i][6] + amountData_Lodge[i][7] + amountData_Lodge[i][8])*50/3)/100; // Average
-      amountData_Lodge[i][2] =  Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][4] + amountData_Lodge[i][5] + amountData_Lodge[i][8])*25)/100; // Average - Covid
+      amountData_Lodge[i][2] =  Math.round((amountData_Lodge[i][3] + amountData_Lodge[i][4] + amountData_Lodge[i][5] + amountData_Lodge[i][6])*25)/100; // Average - Covid
       amountData_Lodge[i] = amountData_Lodge[i].map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros
       return item
     })
 
   quanityData_CharterGuide = quanityData_CharterGuide.map((item, i) => {
       item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
-      item[2] = Math.round((item[3] + item[4] + item[5] + item[8])*5/2)/10; // Average - Covid
+      item[2] = Math.round((item[3] + item[4] + item[5] + item[6])*5/2)/10; // Average - Covid
       item = item.map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros, '0', and replace them with a blank string (makes the data present cleaner)
       amountData_CharterGuide[i][1] = 
         Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][4] + amountData_CharterGuide[i][5] + amountData_CharterGuide[i][6] + amountData_CharterGuide[i][7] + amountData_CharterGuide[i][8])*50/3)/100; // Average
-      amountData_CharterGuide[i][2] =  Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][4] + amountData_CharterGuide[i][5] + amountData_CharterGuide[i][8])*25)/100; // Average - Covid
+      amountData_CharterGuide[i][2] =  Math.round((amountData_CharterGuide[i][3] + amountData_CharterGuide[i][4] + amountData_CharterGuide[i][5] + amountData_CharterGuide[i][6])*25)/100; // Average - Covid
       amountData_CharterGuide[i] = amountData_CharterGuide[i].map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros
       return item
     })
 
   quanityData_All = quanityData_All.map((item, i) => {
       item[1] = Math.round((item[3] + item[4] + item[5] + item[6] + item[7] + item[8])*5/3)/10; // Average
-      item[2] = Math.round((item[3] + item[4] + item[5] + item[8])*5/2)/10; // Average - Covid
+      item[2] = Math.round((item[3] + item[4] + item[5] + item[6])*5/2)/10; // Average - Covid
       item = item.map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros, '0', and replace them with a blank string (makes the data present cleaner)
       amountData_All[i][1] = 
         Math.round((amountData_All[i][3] + amountData_All[i][4] + amountData_All[i][5] + amountData_All[i][6] + amountData_All[i][7] + amountData_All[i][8])*50/3)/100; // Average
-      amountData_All[i][2] =  Math.round((amountData_All[i][3] + amountData_All[i][4] + amountData_All[i][5] + amountData_All[i][8])*25)/100; // Average - Covid
+      amountData_All[i][2] =  Math.round((amountData_All[i][3] + amountData_All[i][4] + amountData_All[i][5] + amountData_All[i][6])*25)/100; // Average - Covid
       amountData_All[i] = amountData_All[i].map(qty => (isQtyNotZero(qty)) ? qty : '') // Remove the zeros
       return item
     })
@@ -2148,27 +2149,27 @@ function searchForQuantityOrAmount(e, spreadsheet, sheet)
       {
         if (row == 2)
         {
-          sheet.getRange(row, numYears - col + 3).uncheck()
+          sheet.getRange(row, numYears - col + 4).uncheck()
           doSearch = true;
         }
         else if (row == 3)
         {
-          if (col == numYears - 7)
+          if (col == numYears - 8)
           {
-            sheet.getRange(row, numYears - 3).uncheck()
-            sheet.getRange(row, numYears - 1).uncheck()
+            sheet.getRange(row, numYears - 4).uncheck()
+            sheet.getRange(row, numYears - 2).uncheck()
             doSearch = true;
           }
-          else if (col == numYears - 3)
+          else if (col == numYears - 4)
           {
-            sheet.getRange(row, numYears - 7).uncheck()
-            sheet.getRange(row, numYears - 1).uncheck()
+            sheet.getRange(row, numYears - 8).uncheck()
+            sheet.getRange(row, numYears - 2).uncheck()
             doSearch = true;
           }
-          else if (col == numYears - 1)
+          else if (col == numYears - 2)
           {
-            sheet.getRange(row, numYears - 7).uncheck()
-            sheet.getRange(row, numYears - 3).uncheck()
+            sheet.getRange(row, numYears - 8).uncheck()
+            sheet.getRange(row, numYears - 4).uncheck()
             doSearch = true;
           }
         }
@@ -2341,7 +2342,7 @@ function searchForQuantityOrAmount(e, spreadsheet, sheet)
     if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
     {
       const numYears = new Date().getFullYear() - 2012 + 1;
-      const checkboxes = sheet.getSheetValues(2, numYears - 7, 2, 7)
+      const checkboxes = sheet.getSheetValues(2, numYears - 8, 2, 7)
       const dataSheet = selectDataSheet(spreadsheet, checkboxes);
       var someSKUsNotFound = false, skus;
       var data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, numCols_SearchSheet);
@@ -2363,7 +2364,7 @@ function searchForQuantityOrAmount(e, spreadsheet, sheet)
       }
       else if (values[0][0].toString().includes('-')) // The SKU contains dashes because that's the convention from Adagio
       {
-        skus = values.map(sku => sku[0].substring(0,4) + sku[0].substring(5,9) + sku[0].substring(10)).map(item => {
+        skus = values.map(sku => (sku[0].substring(0,4) + sku[0].substring(5,9) + sku[0].substring(10)).trim()).map(item => {
         
           for (var i = 0; i < data.length; i++)
           {
@@ -2524,6 +2525,19 @@ function showSidebar(htmlFileName, title)
 function sortByDateThenInvoiveNumber(a, b)
 {
   return (a[2] > b[2]) ? 1 : (a[2] < b[2]) ? -1 : (a[3] > b[3]) ? 1 : (a[3] < b[3]) ? -1 : 0;
+}
+
+/**
+ * This function takes the given string and makes sure that each word in the string has a capitalized 
+ * first letter followed by lower case.
+ * 
+ * @param {String} str : The given string
+ * @return {String} The output string with proper case
+ * @author Jarren Ralf
+ */
+function toProper(str)
+{
+  return capitalizeSubstrings(capitalizeSubstrings(str, '-'), ' ');
 }
 
 /**
