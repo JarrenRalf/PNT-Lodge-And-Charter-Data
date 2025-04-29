@@ -77,9 +77,10 @@ function installedOnOpen()
  * This function adds a new customer to the customer list and to the Dashboard. It then creates a template for their data sheet and chart.
  * 
  * @param {Spreadsheet} spreadsheet : The spreadsheet that the user is addeding a customer to.
+ * @param {Boolean}         isLodge : Whether the new customer is a Lodge customer or not.
  * @author Jarren Ralf
  */
-function addNewCustomer(spreadsheet)
+function addNewCustomer(spreadsheet, isLodge)
 {
   const ui = SpreadsheetApp.getUi()
   const response1 = ui.prompt('What is the customer number?')
@@ -101,7 +102,11 @@ function addNewCustomer(spreadsheet)
 
         if (isNotBlank(customerNumber) && isNotBlank(customerName) && isNotBlank(sheetName))
         {
-          const response4 = ui.alert('You entered the following information:\nCustomer #: \t' + customerNumber + '\nCustomer Name: \t' + customerName + '\nSheet Name: \t' + sheetName + '\n\nDoes this look correct?',ui.ButtonSet.YES_NO)
+          const response4 = ui.alert('You entered the following information:\nCustomer #: \t' + customerNumber + 
+                                     '\nCustomer Name: \t' + customerName + 
+                                     '\nSheet Name: \t' + sheetName + 
+                                     '\nTypeset Customer Name: \t' + properTypesetName + 
+                                     '\n\nDoes this look correct?',ui.ButtonSet.YES_NO)
 
           if (response4 === ui.Button.YES)
           {
@@ -114,17 +119,29 @@ function addNewCustomer(spreadsheet)
               ui.alert('Customer is already in the list.')
             else
             {
-              const customerSheetList = SpreadsheetApp.getActive().getSheetByName('Customer List'); // The Lodge, Charter, & Guide spreadsheet
-              const customerList = customerSheetList.getSheetValues(2, 1, customerSheetList.getLastRow() - 1, 2);
-              const numCustomers = customerList.push([customerNumber, customerName])
-              customerSheetList.getRange(2, 1, numCustomers, 2).setValues(customerList.sort((a, b) => (a[0] > b[0]) ? 1 : (a[0] < b[0]) ? -1 : 0))  // Sort customer list by CUST #
+              const activeSpreadsheet = SpreadsheetApp.getActive();
+              const customerListSheet = activeSpreadsheet.getSheetByName('Customer List'); // The Lodge, Charter, & Guide spreadsheet
+              const customerList = customerListSheet.getSheetValues(2, 1, customerListSheet.getLastRow() - 1, 2);
+              const numCustomers = customerList.push([customerNumber, customerName]) // Add the new customer to the customer list on the The Lodge, Charter, & Guide spreadsheet
+              customerListSheet.getRange(2, 1, numCustomers, 2).setValues(customerList.sort((a, b) => (a[0] > b[0]) ? 1 : (a[0] < b[0]) ? -1 : 0))  // Sort customer list by CUST #
               
               numRows++; // Increase because the number of customers increased by one
               const range = customerSheet.appendRow([customerNumber, customerName, sheetName]).getRange(3, 1, numRows, 3) // Add customer to either the LODGE or CHARTER & GUIDE SALES ss
               const values = range.getValues().sort((a, b) => (a[1] > b[1]) ? 1 : (a[1] < b[1]) ? -1 : 0) // Sort customer alphabetically
               range.setValues(values)
 
-              // Once list is sorted, find new customer, then identify the customer that proceeds the new one, we will use this insert the customer sheets into the correct location
+              // Add the new customer to the Lodge Tracker
+              const lodgeTrackerSpreadsheet = SpreadsheetApp.open(DriveApp.getFilesByName(new Date().getFullYear() + ' Lodge Order Tracking 3.0').next()); // Open the current Lodge Tracker
+              const     customerListSheet_LodgeTracker = lodgeTrackerSpreadsheet.getSheetByName((isLodge) ? 'Lodge Customer List' : 'Charter & Guide Customer List');
+              const fullCustomerListSheet_LodgeTracker = lodgeTrackerSpreadsheet.getSheetByName('Full Customer List');
+              const     customerListRange_LodgeTracker =     customerListSheet_LodgeTracker.appendRow([customerNumber, customerName, properTypesetName]).getRange(3, 1, numRows,      3) // Add customer Lodge Tracker
+              const fullCustomerListRange_LodgeTracker = fullCustomerListSheet_LodgeTracker.appendRow([customerNumber, customerName, properTypesetName]).getRange(3, 1, numCustomers, 3) // Add customer Lodge Tracker
+              const     customerList_LodgeTracker =     customerListRange_LodgeTracker.getValues().sort((a, b) => (a[1] > b[1]) ? 1 : (a[1] < b[1]) ? -1 : 0) // Sort customer alphabetically
+              const fullCustomerList_LodgeTracker = fullCustomerListRange_LodgeTracker.getValues().sort((a, b) => (a[1] > b[1]) ? 1 : (a[1] < b[1]) ? -1 : 0) // Sort customer alphabetically
+                  customerListRange_LodgeTracker.setValues(    customerList_LodgeTracker)
+              fullCustomerListRange_LodgeTracker.setValues(fullCustomerList_LodgeTracker)
+
+              // Once list is sorted, find new customer, then identify the customer that proceeds the new one, we will use this to insert the customer sheets into the correct location
               const newCustIndex = values.findIndex(custNum => custNum[0] === customerNumber)
 
               if (newCustIndex !== 0)
@@ -168,6 +185,8 @@ function addNewCustomer(spreadsheet)
 
               const formulas_YearlyTotals = [formulaRange_YearlyTotals.getFormulas()[0].map(formula => formula.toString().substring(0, 9) + lastRow.toString() + ')')]
               formulaRange_YearlyTotals.setFormulas(formulas_YearlyTotals).offset(1, -3, lastRow - 3, numCols).activate() // Set new formulas because we have a new customer and they need to extend one more row
+
+              activeSpreadsheet.toast(properTypesetName + ' ' + '(' + customerNumber + ') has been successfully added to the customer list', 'New Customer', 60)
             }
           }
         }
@@ -185,7 +204,7 @@ function addNewCustomer(spreadsheet)
  */
 function addNewCharterOrGuideCustomer()
 {
-  addNewCustomer(SpreadsheetApp.openById('1kKS6yazOEtCsH-QCLClUI_6NU47wHfRb8CIs-UTZa1U'))
+  addNewCustomer(SpreadsheetApp.openById('1kKS6yazOEtCsH-QCLClUI_6NU47wHfRb8CIs-UTZa1U'), false)
 }
 
 /**
@@ -195,7 +214,50 @@ function addNewCharterOrGuideCustomer()
  */
 function addNewLodgeCustomer()
 {
-  addNewCustomer(SpreadsheetApp.openById('1o8BB1RWkxK1uo81tBjuxGc3VWArvCdhaBctQDssPDJ0'))
+  addNewCustomer(SpreadsheetApp.openById('1o8BB1RWkxK1uo81tBjuxGc3VWArvCdhaBctQDssPDJ0'), true)
+}
+
+/**
+ * This function takes the given string, splits it at the chosen delimiter, and capitalizes the first letter of each perceived word.
+ * 
+ * @param {String} str : The given string
+ * @param {String} delimiter : The delimiter that determines where to split the given string
+ * @return {String} The output string with proper case
+ * @author Jarren Ralf
+ */
+function capitalizeSubstrings(str, delimiter)
+{
+  var numLetters;
+  var words = str.toString().split(delimiter); // Split the string at the chosen location/s based on the delimiter
+
+  for (var word = 0, string = ''; word < words.length; word++) // Loop through all of the words in order to build the new string
+  {
+    numLetters = words[word].length;
+
+    if (numLetters == 0) // The "word" is a blank string (a sentence contained 2 spaces)
+      continue; // Skip this iterate
+    else if (numLetters == 1) // Single character word
+    {
+      if (words[word][0] !== words[word][0].toUpperCase()) // If the single letter is not capitalized
+        words[word] = words[word][0].toUpperCase(); // Then capitalize it
+    }
+    else if (numLetters == 2 && words[word].toUpperCase() === 'PO') // So that PO Box is displayed correctly
+      words[word] = words[word].toUpperCase();
+    else
+    {
+      /* If the first letter is not upper case or the second letter is not lower case, then
+       * capitalize the first letter and make the rest of the word lower case.
+       */
+      if (words[word][0] !== words[word][0].toUpperCase() || words[word][1] !== words[word][1].toLowerCase())
+        words[word] = words[word][0].toUpperCase() + words[word].substring(1).toLowerCase();
+    }
+
+    string += words[word] + delimiter; // Add a blank space at the end
+  }
+
+  string = string.slice(0, -1); // Remove the last space
+
+  return string;
 }
 
 /**
@@ -2342,7 +2404,7 @@ function searchForQuantityOrAmount(e, spreadsheet, sheet)
     if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
     {
       const numYears = new Date().getFullYear() - 2012 + 1;
-      const checkboxes = sheet.getSheetValues(2, numYears - 8, 2, 7)
+      const checkboxes = sheet.getSheetValues(2, numYears - 7, 2, 7)
       const dataSheet = selectDataSheet(spreadsheet, checkboxes);
       var someSKUsNotFound = false, skus;
       var data = dataSheet.getSheetValues(2, 1, dataSheet.getLastRow() - 1, numCols_SearchSheet);
@@ -2766,7 +2828,7 @@ function updateAllCustomersSalesData(spreadsheet)
   const hAligns = ['left', 'left', 'right', 'right'], numFormats = ['@', '@', '@', '$#,##0.00']
   const chartDataFormat = new Array(numYears).fill().map(() => ['@', '$#,##0.00']);
   const chartDataH_Alignment = new Array(numYears).fill().map(() => ['center', 'right']);
-  var sheet, data, numItems = 0, chartData = [], index = 0, allYearsData, salesData, hAlignments = [], numberFormats = [], 
+  var sheet, data, numItems = 0, chartData = [], index = 0, allYearsData, salesData, salesData_NumRows, hAlignments = [], numberFormats = [], 
     yearRange = [], yearRange_RowNum = 3, totalRange = [], totalRange_RowNum = 1;
   
   const years = new Array(numYears).fill('').map((_, y) => (currentYear - y).toString()).map(year_y => {
@@ -2803,27 +2865,6 @@ function updateAllCustomersSalesData(spreadsheet)
       }
       else
       {
-        if (chartData[numYears - y - 1] == null)
-        {
-          Logger.log('chartData: ' + chartData);
-          Logger.log('chartData.length: ' + chartData.length);
-          Logger.log('numYears - y - 1: ' + (numYears - y - 1));
-        }
-
-        if (salesTotals[index] == null)
-        {
-          Logger.log('salesTotals: ' + salesTotals);
-          Logger.log('salesTotals.length: ' + salesTotals.length);
-          Logger.log('index: ' + (index));
-        }
-
-        if (salesTotals[index][y] == null)
-        {
-          Logger.log('salesTotals: ' + salesTotals);
-          Logger.log('salesTotals.length: ' + salesTotals.length);
-          Logger.log('y: ' + (y));
-        }
-        
         chartData[numYears - y - 1][1] = '';
         salesTotals[index][y] = ''; 
       }
@@ -2836,17 +2877,31 @@ function updateAllCustomersSalesData(spreadsheet)
     salesData = [].concat.apply([], allYearsData);
     salesData.pop()
 
-    hAlignments = new Array(salesData.length).fill().map(() => hAligns)
-    numberFormats = new Array(salesData.length).fill().map(() => numFormats)
+    salesData_NumRows = salesData.length;
 
-    sheets[s].getRange(3, 1, sheets[s].getMaxRows() - 2, 6).clearContent().setBackground('white').setBorder(false, false, false, false, false, false)
-      .offset(0, 0, salesData.length, 4).setFontWeight('normal').setVerticalAlignment('middle').setHorizontalAlignments(hAlignments).setNumberFormats(numberFormats).setValues(salesData)
-      .offset(0, 4, numYears, 2).setNumberFormats(chartDataFormat).setHorizontalAlignments(chartDataH_Alignment).setFontWeight('normal').setValues(chartData)
-      .offset(-2, -1, 1, 1).setFormula([['=SUM(F3:F' + (numYears + 2) + ')']])
+    if (salesData_NumRows > 0)
+    {
+      hAlignments = new Array(salesData_NumRows).fill().map(() => hAligns)
+      numberFormats = new Array(salesData_NumRows).fill().map(() => numFormats)
 
-    sheets[s].getRangeList(yearRange).setFontWeight('bold').setNumberFormat('@') // The year
-    sheets[s].getRangeList(totalRange).setBorder(true, false, true, false, false, false).setBackground('#c0c0c0').setFontWeight('bold') // The total quantity and amount
+      sheets[s].getRange(3, 1, sheets[s].getMaxRows() - 2, 6).clearContent().setBackground('white').setBorder(false, false, false, false, false, false)
+        .offset(0, 0, salesData_NumRows, 4).setFontWeight('normal').setVerticalAlignment('middle').setHorizontalAlignments(hAlignments).setNumberFormats(numberFormats).setValues(salesData)
+        .offset(0, 4, numYears, 2).setNumberFormats(chartDataFormat).setHorizontalAlignments(chartDataH_Alignment).setFontWeight('normal').setValues(chartData)
+        .offset(-2, -1, 1, 1).setFormula([['=SUM(F3:F' + (numYears + 2) + ')']])
 
+      sheets[s].getRangeList(yearRange).setFontWeight('bold').setNumberFormat('@') // The year
+      sheets[s].getRangeList(totalRange).setBorder(true, false, true, false, false, false).setBackground('#c0c0c0').setFontWeight('bold') // The total quantity and amount
+    }
+    else
+    {
+      hAlignments = new Array(salesData_NumRows).fill().map(() => hAligns)
+      numberFormats = new Array(salesData_NumRows).fill().map(() => numFormats)
+
+      sheets[s].getRange(3, 1, sheets[s].getMaxRows() - 2, 6).clearContent().setBackground('white').setBorder(false, false, false, false, false, false)
+        .offset(0, 4, numYears, 2).setNumberFormats(chartDataFormat).setHorizontalAlignments(chartDataH_Alignment).setFontWeight('normal').setValues(chartData)
+        .offset(-2, -1, 1, 1).setFormula([['=SUM(F3:F' + (numYears + 2) + ')']])
+    }
+    
     // Reset the variables
     yearRange.length = 0;
     totalRange.length = 0;
