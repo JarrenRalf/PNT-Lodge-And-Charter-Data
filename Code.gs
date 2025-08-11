@@ -645,7 +645,7 @@ function configureYearlyCustomerItemData(values, fileName, doesPreviousSheetExis
     const numCols = 6;
     const sheets = spreadsheet.getSheets();
     Logger.log(year)
-    const previousSheet = sheets.find(sheet => sheet.getSheetName() == year)
+    const previousSheet = sheets.find(sheet => {Logger.log(sheet.getSheetName()); return sheet.getSheetName() == year})
     Logger.log(previousSheet.getSheetName())
     var indexAdjustment = 2011
 
@@ -722,6 +722,9 @@ function configureYearlyInvoiceData(values, spreadsheet)
     newSheet.setTabColor('#a64d79').setFrozenRows(1)
     newSheet.protect()
     newSheet.getRange(1, 1, 1, numCols).setFontSize(11).setFontWeight('bold').offset(0, 0, lastRow, numCols).setNumberFormat('@').setValues(data)
+
+    Logger.log('All of the years of invoice data will be begin compiling at:')
+    Logger.log(new Date(new Date().getTime() + 500))
 
     ScriptApp.newTrigger('concatenateAllData').timeBased().after(500).create() // Concatenate all of the data
     spreadsheet.getSheetByName('Search for Invoice #s').getRange(1, 1).activate()
